@@ -28,7 +28,7 @@ const sourceUrl = (span) => span ? `https://github.com/wieslawsoltes/FerroUI/blo
 const frontmatter = (title, description = '') => `---\ntitle: ${JSON.stringify(title)}\ndescription: ${JSON.stringify(description.slice(0, 250))}\neditUrl: false\n---\n\n`;
 // Rustdoc intra-doc links name Rust paths (`[text](crate_name::module::Item)`, `[text](Item)`), which are
 // not URLs on this site; keep their text. Links to known API names are added from the page model.
-const pathLinks = (text) => (text || '').split(/(```[\s\S]*?```)/).map((part, i) => i % 2 ? part : part.replace(/\[(`?[^\]\n]+`?)\]\((?:[A-Za-z_][A-Za-z0-9_]*::)+[^()\s]*(?:\(\))?\)/g, '$1').replace(/\[(`?[^\]\n]+`?)\]\([A-Za-z_][A-Za-z0-9_]*(?:\(\))?\)/g, '$1')).join('');
+const pathLinks = (text) => (text || '').split(/(```[\s\S]*?```)/).map((part, i) => i % 2 ? part : part.replace(/\[((?:[^[\]\n]|\[[^\]\n]*\])+)\]\((?:[a-z]+@)?(?:[A-Za-z_][A-Za-z0-9_]*::)*[A-Za-z_][A-Za-z0-9_]*!?(?:\(\))?\)/g, '$1').replace(/^[ \t]*\[[^\]\n]+\]:[ \t]*(?:[a-z]+@)?(?:[A-Za-z_][A-Za-z0-9_]*::)*[A-Za-z_][A-Za-z0-9_]*!?(?:\(\))?[ \t]*$/gm, '')).join('');
 const markdown = (text) => pathLinks(text).replace(/^\s*# (?!\!)(.*)$/gm, '## $1').replace(/```rust[^\n]*\n([\s\S]*?)```/g, (_, code) => '```rust\n' + code.split('\n').filter((l) => !/^\s*#(?:\s|$)/.test(l)).join('\n') + '```').replace(/\[(`[^`]+`)\](?!\()/g, '$1');
 for (const file of await files(content)) {
   if (!/\.mdx?$/.test(file)) continue;
