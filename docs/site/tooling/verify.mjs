@@ -19,7 +19,12 @@ for(const page of content.pages){
   const route=page.id==='home'?'':page.id;
   if(!await exists(path.join(dist,route,'index.html')))errors.push(`Missing HTML: ${route}`);
   if(!await exists(path.join(dist,route,'index.md')))errors.push(`Missing Markdown: ${route}`);
-  if(page.section==='api')continue;
+  if(page.section==='api'){
+    // Generated reference pages link only within the site or to absolute URLs.
+    const html=await fs.readFile(path.join(dist,route,'index.html'),'utf8');
+    for(const [,raw] of html.matchAll(/href="([^"]*)"/g))if(!/^(\/|#|https?:|mailto:)/.test(raw))errors.push(`Unresolved link in generated reference: ${route} -> ${raw}`);
+    continue;
+  }
   const html=await fs.readFile(path.join(dist,route,'index.html'),'utf8');
   for(const [,raw] of html.matchAll(/href="([^"]+)"/g)){
     if(!raw.startsWith(base+'/'))continue;

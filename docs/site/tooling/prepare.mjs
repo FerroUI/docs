@@ -26,7 +26,10 @@ const docRevision = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, enco
 const packageVersion = version === 'next' ? (await fs.readFile(path.join(framework,'Cargo.toml'),'utf8')).match(/\[workspace.package\][\s\S]*?^version\s*=\s*"([^"]+)"/m)[1] : version;
 const sourceUrl = (span) => span ? `https://github.com/wieslawsoltes/FerroUI/blob/${commit}/${span.filename.replaceAll('\\','/')}#L${span.begin[0]}` : null;
 const frontmatter = (title, description = '') => `---\ntitle: ${JSON.stringify(title)}\ndescription: ${JSON.stringify(description.slice(0, 250))}\neditUrl: false\n---\n\n`;
-const markdown = (text) => (text || '').replace(/^\s*# (?!\!)(.*)$/gm, '## $1').replace(/```rust[^\n]*\n([\s\S]*?)```/g, (_, code) => '```rust\n' + code.split('\n').filter((l) => !/^\s*#(?:\s|$)/.test(l)).join('\n') + '```').replace(/\[(`?[^\]\n]+`?)\]\((?:crate|Self|super)::[^)]+\)/g, '$1').replace(/\[(`[^`]+`)\](?!\()/g, '$1');
+// Rustdoc intra-doc links name Rust paths (`[text](crate_name::module::Item)`, `[text](Item)`), which are
+// not URLs on this site; keep their text. Links to known API names are added from the page model.
+const pathLinks = (text) => (text || '').split(/(```[\s\S]*?```)/).map((part, i) => i % 2 ? part : part.replace(/\[(`?[^\]\n]+`?)\]\((?:[A-Za-z_][A-Za-z0-9_]*::)+[^()\s]*(?:\(\))?\)/g, '$1').replace(/\[(`?[^\]\n]+`?)\]\([A-Za-z_][A-Za-z0-9_]*(?:\(\))?\)/g, '$1')).join('');
+const markdown = (text) => pathLinks(text).replace(/^\s*# (?!\!)(.*)$/gm, '## $1').replace(/```rust[^\n]*\n([\s\S]*?)```/g, (_, code) => '```rust\n' + code.split('\n').filter((l) => !/^\s*#(?:\s|$)/.test(l)).join('\n') + '```').replace(/\[(`[^`]+`)\](?!\()/g, '$1');
 for (const file of await files(content)) {
   if (!/\.mdx?$/.test(file)) continue;
   const relative = path.relative(content, file);
@@ -116,7 +119,7 @@ for (const p of pages.values()) {
   if (!p.docs) missing.push(p.id);
   let body = frontmatter(p.name, p.docs.split('\n')[0]);
   body += `**${p.kind.replaceAll('_', ' ')}** · [\`${p.crate}\`](${base}/api/${p.crate}/) · ${version === 'next' ? 'Unreleased' : 'v' + version}\n\n`;
-  let prose = p.docs;
+  let prose = pathLinks(p.docs);
   for (const [name,url] of Object.entries(p.links)) prose = prose.replaceAll(`[\`${name}\`]`, `[\`${name}\`](${base}/${url})`).replaceAll(`[${name}]`, `[${name}](${base}/${url})`);
   body += `\`\`\`rust\n${p.signature}\n\`\`\`\n\n${markdown(prose)}\n\n`;
   if (sourceUrl(p.source)) body += `[View source](${sourceUrl(p.source)})\n\n`;
