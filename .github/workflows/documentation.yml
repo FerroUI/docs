@@ -1,0 +1,170 @@
+name: Build documentation version
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  DOCS_REQUEST_VERSION: ${{ inputs.version }}
+  DOCS_PREFIX: /${{ github.event.repository.name }}
+  DOCS_ORIGIN: ${{ vars.DOCS_ORIGIN || 'https://ferroui.github.io' }}
+  DOCS_REPOSITORY: ${{ github.repository }}
+  PYTHONUTF8: 1
+  CARGO_INCREMENTAL: 0
+  CARGO_PROFILE_DEV_DEBUG: 0
+  CARGO_BUILD_JOBS: 3
+
+jobs:
+  api:
+    name: API (${{ matrix.name }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: macos, os: macos-15, target: '', packages: '' }
+          - { name: linux, os: ubuntu-latest, target: '', packages: 'ferroui-x11,ferroui-wayland,ferroui-freedesktop,ferroui-linuxframebuffer,ferroui-headless,ferroui-headless-vnc' }
+          - { name: windows, os: windows-latest, target: '', packages: 'ferroui-win32,ferroui-winui' }
+          - { name: ios, os: macos-15, target: aarch64-apple-ios, packages: ferroui-ios }
+          - { name: android, os: ubuntu-latest, target: aarch64-linux-android, packages: ferroui-android }
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 120
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d # stable
+        with:
+          toolchain: 1.99.0
+      - name: Exact source identity
+        run: python3 docs/site/tooling/snapshot.py --version "$DOCS_REQUEST_VERSION"
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: '.framework/${{ inputs.version }} -> ../../target/docs-api'
+          key: docs-api-${{ matrix.name }}
+      - name: Linux build dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libfontconfig1-dev libfreetype6-dev
+      - name: macOS build dependencies
+        if: runner.os == 'macOS'
+        run: command -v ninja || brew install ninja
+      - name: Target toolchain
+        if: matrix.target != ''
+        run: rustup target add '${{ matrix.target }}'
+      - name: Android C++ environment
+        if: matrix.name == 'android'
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'ndk;28.2.13676358' > /dev/null || true
+          source "$DOCS_FRAMEWORK_ROOT/scripts/android/env.sh"
+          env | grep -E '^(CC_|CXX_|AR_|CARGO_TARGET_|ANDROID_NDK)' >> "$GITHUB_ENV"
+      - name: Extract compiler API
+        run: |
+          flags=()
+          if [ '${{ matrix.name }}' = windows ]; then flags+=(--no-default-features); fi
+          if [ '${{ matrix.name }}' = macos ]; then flags+=(--application-features); fi
+          python3 docs/site/tooling/extract.py --source "$DOCS_FRAMEWORK_ROOT" --target '${{ matrix.target }}' --packages '${{ matrix.packages }}' --output 'docs/site/.cache/api/${{ matrix.name }}' "${flags[@]}"
+      - name: Registered markup and control metadata
+        if: matrix.name == 'macos'
+        run: |
+          mkdir -p docs/site/.cache
+          cargo run --locked --manifest-path "$DOCS_FRAMEWORK_ROOT/samples/Docs.Browser/Cargo.toml" > docs/site/.cache/markup.json
+          cargo run --locked --manifest-path "$DOCS_FRAMEWORK_ROOT/samples/Docs.Browser/Cargo.toml" -- --verify-examples "$DOCS_CONTENT_ROOT/examples.json"
+          python3 docs/site/tooling/check-example.py
+      - uses: actions/upload-artifact@v7
+        with:
+          name: docs-api-${{ inputs.version }}-${{ matrix.name }}
+          path: |
+            docs/site/.cache/api
+            docs/site/.cache/markup.json
+          include-hidden-files: true
+
+  browser:
+    name: Interactive examples
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d # stable
+        with:
+          toolchain: 1.99.0
+      - name: Exact source identity
+        run: python3 docs/site/tooling/snapshot.py --version "$DOCS_REQUEST_VERSION"
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Install upstream browser toolchain
+        run: bash "$DOCS_FRAMEWORK_ROOT/scripts/browser/setup.sh" "$RUNNER_TEMP/browser-tools"
+      - name: Build the real WASM runner
+        run: |
+          source "$RUNNER_TEMP/browser-tools/env.sh"
+          bash "$DOCS_FRAMEWORK_ROOT/scripts/build-browser.sh" ferroui-docs-browser --out "$DOCS_FRAMEWORK_ROOT/target/docs-runner"
+          mkdir -p docs/site/public/runner
+          cp -R "$DOCS_FRAMEWORK_ROOT/target/docs-runner/." docs/site/public/runner/
+      - name: Browser API
+        run: |
+          source "$RUNNER_TEMP/browser-tools/env.sh"
+          python3 docs/site/tooling/extract.py --source "$DOCS_FRAMEWORK_ROOT" --target wasm32-unknown-emscripten --packages ferroui-browser --output docs/site/.cache/api/browser
+      - uses: actions/upload-artifact@v7
+        with:
+          name: docs-browser-${{ inputs.version }}
+          path: docs/site/public/runner
+      - uses: actions/upload-artifact@v7
+        with:
+          name: docs-api-${{ inputs.version }}-browser
+          path: docs/site/.cache
+          include-hidden-files: true
+
+  site:
+    name: Build, verify, and package
+    needs: [api, browser]
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d # stable
+        with:
+          toolchain: 1.99.0
+      - name: Exact source identity
+        run: python3 docs/site/tooling/snapshot.py --version "$DOCS_REQUEST_VERSION"
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: docs/site/package-lock.json
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: docs-api-${{ inputs.version }}-*
+          path: docs/site/.cache
+          merge-multiple: true
+      - uses: actions/download-artifact@v8
+        with:
+          name: docs-browser-${{ inputs.version }}
+          path: docs/site/public/runner
+      - run: npm ci --prefix docs/site
+      - name: Generator and publication tests
+        run: |
+          npm test --prefix docs/site
+          python3 -m unittest discover -s docs/site/tooling -p 'test_*.py'
+      - name: Build complete documentation
+        env:
+          DOCS_STRICT: '1'
+          NODE_OPTIONS: --max-old-space-size=6144
+        run: npm run build --prefix docs/site
+      - name: Check authored links and exports
+        run: |
+          node docs/site/tooling/verify.mjs
+          npm run check --prefix docs/site
+      - name: Browser engines
+        run: cd docs/site && npx playwright install --with-deps chromium firefox webkit
+      - name: Browser behavior and responsive navigation
+        run: npm run test:browser --prefix docs/site
+      - uses: actions/upload-artifact@v7
+        with:
+          name: docs-site-${{ inputs.version }}
+          path: docs/site/dist

@@ -1,0 +1,82 @@
+name: Publish documentation
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: documentation-pages
+  cancel-in-progress: false
+
+jobs:
+  versions:
+    name: Pinned versions
+    runs-on: ubuntu-latest
+    outputs:
+      versions: ${{ steps.pins.outputs.versions }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: pins
+        run: echo "versions=$(jq -c '["next"] + (.releases | keys)' framework.json)" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Build ${{ matrix.version }}
+    needs: versions
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ${{ fromJSON(needs.versions.outputs.versions) }}
+    uses: ./.github/workflows/documentation.yml
+    with:
+      version: ${{ matrix.version }}
+
+  publish:
+    name: Deploy to GitHub Pages
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/configure-pages@v6
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: docs-site-*
+          path: snapshots
+      - name: Assemble the Pages output
+        env:
+          DOCS_PREFIX: /${{ github.event.repository.name }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, sys
+          sys.path.insert(0, 'docs/site/tooling')
+          from publish import assemble
+          root = pathlib.Path('snapshots')
+          pins = json.loads(pathlib.Path('framework.json').read_text())
+          releases = root / 'releases'
+          releases.mkdir()
+          for version, commit in {'next': pins['next'], **pins['releases']}.items():
+              site = root / f'docs-site-{version}'
+              provenance = json.loads((site / 'agents/provenance.json').read_text())
+              if provenance['version'] != version or provenance['frameworkCommit'] != commit:
+                  raise ValueError(f'Build provenance mismatch for {version}')
+              if version != 'next':
+                  (site / 'release.json').write_text(json.dumps({'version': version, 'prerelease': '-' in version}))
+                  site.rename(releases / version)
+          assemble(root / 'docs-site-next', releases, 'pages', os.environ['DOCS_PREFIX'])
+          PY
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: pages
+      - id: deploy
+        uses: actions/deploy-pages@v5
