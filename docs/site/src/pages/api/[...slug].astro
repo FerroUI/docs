@@ -1,0 +1,86 @@
+---
+import fs from 'node:fs';
+import path from 'node:path';
+import { marked } from 'marked';
+import sanitize from 'sanitize-html';
+import Search from '../../components/Search.astro';
+import SiteTitle from '../../components/SiteTitle.astro';
+import '../../styles/theme.css';
+
+interface Props {
+  page: { name: string; crate: string; url: string; summary: string; members: Array<{name:string;url:string}> };
+}
+
+export function getStaticPaths() {
+  const pages = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), '.cache/api-pages.json'), 'utf8'));
+  return pages.map((page: any) => ({ params: { slug: page.url.slice(4).replace(/\/$/, '') }, props: { page } }));
+}
+const { page } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const version = process.env.DOCS_VERSION || 'next';
+const markdown = fs.readFileSync(path.resolve(process.cwd(), '.cache/api-markdown', page.url, 'index.md'), 'utf8').replace(/^---\n[\s\S]*?\n---\n/, '');
+const body = sanitize(marked.parse(markdown, { async: false }), {
+  allowedTags: sanitize.defaults.allowedTags.concat(['details','summary']),
+  allowedAttributes: { ...sanitize.defaults.allowedAttributes, a:['href','id','title'], code:['class'], h2:['id'], h3:['id'], span:['class'] },
+});
+const links = [['All topics','topics'],['Start','start/installation'],['Guides','guides/architecture'],['XAML','xaml/overview'],['Controls','controls'],['Design','design/themes'],['Platforms','platforms/desktop'],['Ecosystem','ecosystem/overview'],['API reference','api']];
+---
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>{page.name} · {page.crate} · FerroUI</title>
+<meta name="description" content={page.summary}/>
+{Astro.site && <link rel="canonical" href={new URL(base+'/'+page.url,Astro.site)}/>}
+<link rel="alternate" type="text/markdown" href={`${base}/${page.url}index.md`}/>
+<link rel="describedby" href={`${base}/llms.txt`}/>
+<meta name="ferroui-version" content={version}/>
+<link rel="icon" href={`${base}/favicon.svg`} type="image/svg+xml"/>
+<script is:inline>try{const t=localStorage.getItem('starlight-theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.dataset.theme='dark'}catch{}</script>
+</head>
+<body class="api-document">
+<a class="skip" href="#main">Skip to content</a>
+<header class="api-header">
+<SiteTitle/>
+<Search/>
+<a href="https://github.com/wieslawsoltes/FerroUI">GitHub ↗</a>
+<button type="button" data-theme-toggle aria-label="Switch color theme">◐</button>
+</header>
+<div class="api-layout">
+<nav class="api-nav" aria-label="Documentation">
+<span class="eyebrow">DOCUMENTATION</span>{links.map(([title,route])=>
+<a href={`${base}/${route}/`}>{title}</a>)}<hr/>
+<span class="eyebrow">THIS CRATE</span>
+<a href={`${base}/api/${page.crate}/`}>{page.crate}</a>
+<small>Search a symbol or browse this crate's module contents.</small>
+</nav>
+<main id="main" data-pagefind-body>
+<span hidden data-pagefind-filter="section">api</span>
+<span hidden data-pagefind-filter="version">{version}</span>
+<span hidden data-pagefind-filter="crate">{page.crate}</span>
+<div class="api-breadcrumb">
+<a href={`${base}/api/`}>API reference</a>
+<span>/</span>
+<a href={`${base}/api/${page.crate}/`}>{page.crate}</a>
+</div>
+<h1>{page.name}</h1>
+<div class="sl-markdown-content" set:html={body}/>
+<footer class="docs-footer">
+<span>FerroUI · {version}</span>
+<a href={`${base}/${page.url}index.md`}>Read as Markdown</a>
+<a href={`${base}/agents/symbols.json`}>Symbol index (JSON)</a>
+</footer>
+</main>
+<aside class="api-outline" aria-label="Members">
+<span class="eyebrow">MEMBERS</span>{page.members.slice(0,80).map((m:any)=>
+<a href={`#${m.url.split('#')[1]}`}>{m.name}</a>)}{page.members.length>80&&<small>See the full member list in the article.</small>}</aside>
+</div>
+</body>
+</html>
+<script>
+ document.querySelector('[data-theme-toggle]')?.addEventListener('click',()=>{const theme=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=theme;try{localStorage.setItem('starlight-theme',theme)}catch{}});
+</script>
+<style is:global>
+:root{--sl-color-gray-3:#728096;--sl-color-text:#bac4d5;--sl-color-white:#f3f5fa;--sl-color-bg:#131922;--sl-color-bg-sidebar:#18202b;--sl-color-hairline:#2c3544;--sl-color-hairline-light:#2c3544;--sl-font-mono:ui-monospace,SFMono-Regular,Consolas,monospace}html[data-theme=light]{--sl-color-text:#4f5866;--sl-color-white:#17202e;--sl-color-bg:#fcfcfa;--sl-color-bg-sidebar:#f8f9f7;--sl-color-hairline:#e6e8e4;--sl-color-hairline-light:#e6e8e4}*{box-sizing:border-box}.api-document{margin:0;background:var(--sl-color-bg);color:var(--sl-color-text);font:15px/1.75 'DM Sans',system-ui,sans-serif}.api-document a{color:var(--sl-color-accent);overflow-wrap:anywhere}.api-document h1,.api-document h2,.api-document h3{color:var(--sl-color-white);line-height:1.3}.api-document h1{font-size:2.5rem;margin:.8rem 0 1.5rem;overflow-wrap:anywhere}.api-document h2{font-size:1.35rem;border-top:1px solid var(--sl-color-hairline);padding-top:1.5rem}.api-document h3{font-size:1rem;margin-top:2rem}.api-header{height:70px;display:flex;align-items:center;gap:2rem;padding:0 2rem;border-bottom:1px solid var(--sl-color-hairline);position:sticky;top:0;background:var(--sl-color-bg);z-index:5}.api-header docs-search{margin-left:auto;max-width:360px}.api-header>a{font-size:.75rem;text-decoration:none}.api-header>button{color:var(--sl-color-text);background:none;border:1px solid var(--sl-color-hairline);border-radius:6px;font-size:1rem}.api-layout{display:grid;grid-template-columns:220px minmax(0,850px) 200px;max-width:1400px;margin:auto}.api-nav{padding:2rem 1.5rem;border-right:1px solid var(--sl-color-hairline);display:flex;flex-direction:column;gap:.5rem;height:calc(100vh - 70px);position:sticky;top:70px}.api-nav>a{text-decoration:none;font-size:.8rem;color:var(--sl-color-text)}.api-nav small{font-size:.7rem;color:var(--sl-color-gray-3);margin-top:.5rem}.api-nav hr{width:100%;border:0;border-top:1px solid var(--sl-color-hairline);margin:.7rem 0}.api-layout main{padding:2rem 3rem;min-width:0}.api-breadcrumb{display:flex;gap:.5rem;font-size:.72rem;color:var(--sl-color-gray-3)}.api-breadcrumb a{color:inherit;text-decoration:none}.api-outline{padding:2rem 1rem;display:flex;flex-direction:column;gap:.2rem;position:sticky;top:70px;max-height:calc(100vh - 70px);overflow:auto}.api-outline a{font:.65rem/1.8 var(--sl-font-mono);text-decoration:none;color:var(--sl-color-gray-3)}.api-outline small{font-size:.65rem}.api-document pre{border:1px solid var(--sl-color-hairline);background:var(--sl-color-bg-sidebar);padding:1rem;border-radius:7px;overflow:auto;line-height:1.65;font-size:.75rem}.api-document code{font-family:var(--sl-font-mono);font-size:.85em}.api-document :not(pre)>code{background:var(--sl-color-bg-sidebar);padding:.15em .3em;border-radius:3px}.api-document table{font-size:.8rem;border-collapse:collapse;display:block;overflow:auto}.api-document td,.api-document th{border:1px solid var(--sl-color-hairline);padding:.5rem}.api-document li{margin:.3rem 0}.api-document .skip{position:absolute;left:-9999px}.api-document .skip:focus{left:1rem;z-index:10;background:var(--sl-color-bg);padding:.5rem}.api-document [id]{scroll-margin-top:90px}@media(max-width:1100px){.api-layout{grid-template-columns:200px minmax(0,1fr)}.api-outline{display:none}}@media(max-width:700px){.api-layout{display:block}.api-nav{display:none}.api-layout main{padding:1.5rem}.api-header{padding:0 1rem;gap:1rem}.api-header>a{display:none}.api-header docs-search{width:auto}}
+</style>

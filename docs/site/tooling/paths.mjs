@@ -1,0 +1,10 @@
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
+export const site = fileURLToPath(new URL('../', import.meta.url));
+export const root = path.resolve(site, '../..');
+export const version = process.env.DOCS_VERSION || 'next';
+if (!/^(next|\d+\.\d+\.\d+(?:-[\w.-]+)?)$/.test(version)) throw new Error('Invalid DOCS_VERSION');
+export const base = (process.env.DOCS_BASE || `/docs/${version}`).replace(/\/$/, '');
+export const contentVersion = process.env.DOCS_CONTENT_VERSION || version;
+if (!/^(next|\d+\.\d+\.\d+(?:-[\w.-]+)?)$/.test(contentVersion)) throw new Error('Invalid DOCS_CONTENT_VERSION');
+export const content = process.env.DOCS_CONTENT_ROOT || path.resolve(site, '../content', contentVersion);

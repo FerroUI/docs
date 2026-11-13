@@ -1,0 +1,9 @@
+---
+import Default from '@astrojs/starlight/components/Head.astro';
+const pathname = Astro.url.pathname.replace(/\/$/, '');
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+<Default {...Astro.props} />
+<link rel="alternate" type="text/markdown" href={`${pathname || base}/index.md`} />
+<link rel="describedby" href={`${base}/llms.txt`} />
+<meta name="ferroui-version" content={process.env.DOCS_VERSION || 'next'} />

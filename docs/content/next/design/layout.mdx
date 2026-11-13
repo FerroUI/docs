@@ -1,0 +1,77 @@
+---
+title: "Build layouts that adapt"
+description: "Build resizable forms and bounded scrolling regions, then diagnose sizing and clipping."
+sidebar:
+  order: 1
+---
+
+Layout has two phases: measure asks children how much space they need; arrange assigns their final bounds. The parent determines the constraints a child sees. Understand that relationship before adding fixed widths or margins to compensate for unexpected behavior.
+
+
+## Try a bounded results area
+
+This layout keeps the search field at its desired height and gives the remaining space to a scrolling list:
+
+```xml
+<Grid xmlns="https://github.com/ferroui" RowDefinitions="Auto,*"
+      Height="320" Margin="16">
+  <TextBox PlaceholderText="Search records" Margin="0,0,0,12" />
+  <ListBox Grid.Row="1">
+    <ListBoxItem Content="Ada" />
+    <ListBoxItem Content="Grace" />
+    <ListBoxItem Content="Margaret" />
+  </ListBox>
+</Grid>
+```
+
+The fixed height makes this fragment easy to test. In a real resizable screen, let the window or parent supply the available height. Add enough items to overflow and reduce the height: the list should scroll while the search field remains visible. Compare the [live Grid example]({{BASE}}/controls/reference/grid/) at different preview widths.
+
+## Choose a panel
+
+Use Grid for forms and resizable regions. Use StackPanel for a short flow in one direction. Use WrapPanel when items should continue on another line. Use DockPanel for edges around a remaining content region. Use Canvas when positioning is intrinsically coordinate-based.
+
+```xml
+<Grid xmlns="https://github.com/ferroui"
+      ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" Margin="24">
+  <TextBlock Text="Name" Margin="0,0,12,8" />
+  <TextBox Grid.Column="1" PlaceholderText="Display name" />
+  <Button Grid.Row="1" Grid.Column="1"
+          HorizontalAlignment="Left" Content="Save" />
+</Grid>
+```
+
+## Constraints and scrolling
+
+A StackPanel can offer effectively unbounded space along its stacking direction. A virtualizing list needs a bounded viewport to know which containers to realize. Put the list in a constrained Grid row instead of an outer scrolling StackPanel.
+
+Use `MinWidth`, `MaxWidth`, and alignment to express intent. Fixed pixel coordinates are fragile when text changes, localization makes labels longer, or a user increases the font size.
+
+## Margin, padding, and alignment
+
+Margin reserves space outside a control; padding reserves space around its content. Alignment positions the control within its allocation. A stretched control with a fixed width remains constrained by that width.
+
+Inspect actual bounds in the developer tools when something appears clipped. Check the parent first, then the child, and look for an earlier fixed-size constraint rather than adding more clipping exceptions.
+
+## When the layout still looks wrong
+
+| Result | Check |
+| --- | --- |
+| The list grows instead of scrolling | Does its parent give it a finite height? |
+| A field will not stretch | Is a fixed `Width` or parent column constraining it? |
+| Text clips after localization | Is a fixed height preventing wrapping? |
+| Spacing doubles unexpectedly | Are both adjacent margins reserving space? |
+
+## Try the controls
+
+import LiveSample from '@components/LiveSample.astro';
+
+Change the column definitions and preview width. Compare the result with the sizing rules above.
+
+<LiveSample id="grid" />
+
+## Public APIs and controls
+
+- [Grid]({{BASE}}/controls/reference/grid/), [StackPanel]({{BASE}}/controls/reference/stackpanel/), [WrapPanel]({{BASE}}/controls/reference/wrappanel/), and [DockPanel]({{BASE}}/controls/reference/dockpanel/) — layout strategies.
+- [ScrollViewer]({{BASE}}/controls/reference/scrollviewer/) and [ListBox]({{BASE}}/controls/reference/listbox/) — scrolling content.
+- [`Control`]({{BASE}}/api/ferroui-controls/struct-control/) — sizing, alignment, and bounds.
+- [Developer tools]({{BASE}}/tools/devtools/) — inspect actual constraints and values.

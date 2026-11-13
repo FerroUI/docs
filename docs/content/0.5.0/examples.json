@@ -1,0 +1,134 @@
+[
+  {
+    "id": "button",
+    "title": "Buttons and commands",
+    "control": "Button",
+    "xaml": "<StackPanel xmlns=\"https://github.com/ferroui\" Spacing=\"12\">\n  <TextBlock Text=\"A clear next step\" FontSize=\"20\" />\n  <Button Content=\"Continue\" HorizontalAlignment=\"Left\" />\n  <Button Content=\"Unavailable\" IsEnabled=\"False\" />\n</StackPanel>",
+    "rust": "use ferroui_controls::Button;\nlet button = Button::new();\nbutton.set_content(Some(std::rc::Rc::new(\"Continue\".to_owned())));\n// Use button.click(...) for view-local behavior, or bind a command for application actions."
+  },
+  {
+    "id": "text-box",
+    "title": "Text entry",
+    "control": "TextBox",
+    "xaml": "<StackPanel xmlns=\"https://github.com/ferroui\" Spacing=\"12\">\n  <TextBlock Text=\"Your name\" />\n  <TextBox PlaceholderText=\"Enter a display name\" />\n  <TextBox Text=\"Try editing this text\" />\n</StackPanel>",
+    "rust": null
+  },
+  {
+    "id": "check-box",
+    "title": "Check boxes",
+    "control": "CheckBox",
+    "xaml": "<StackPanel xmlns=\"https://github.com/ferroui\" Spacing=\"12\">\n  <CheckBox Content=\"Send me updates\" IsChecked=\"True\" />\n  <CheckBox Content=\"Remember this device\" />\n  <CheckBox Content=\"Indeterminate\" IsThreeState=\"True\" />\n</StackPanel>",
+    "rust": null
+  },
+  {
+    "id": "toggle-switch",
+    "title": "A binary setting",
+    "control": "ToggleSwitch",
+    "xaml": "<StackPanel xmlns=\"https://github.com/ferroui\" Spacing=\"16\">\n  <ToggleSwitch Content=\"Notifications\" IsChecked=\"True\" />\n  <ToggleSwitch Content=\"Quiet mode\" />\n</StackPanel>",
+    "rust": null
+  },
+  {
+    "id": "radio-button",
+    "title": "Choose one option",
+    "control": "RadioButton",
+    "xaml": "<StackPanel xmlns=\"https://github.com/ferroui\" Spacing=\"12\">\n  <RadioButton Content=\"Light\" GroupName=\"Appearance\" IsChecked=\"True\" />\n  <RadioButton Content=\"Dark\" GroupName=\"Appearance\" />\n  <RadioButton Content=\"System\" GroupName=\"Appearance\" />\n</StackPanel>",
+    "rust": null
+  },
+  {
+    "id": "slider",
+    "title": "Adjust a numeric value",
+    "control": "Slider",
+    "xaml": "<StackPanel xmlns=\"https://github.com/ferroui\" Spacing=\"16\">\n  <TextBlock Text=\"Volume\" />\n  <Slider Minimum=\"0\" Maximum=\"100\" Value=\"65\" />\n  <ProgressBar Minimum=\"0\" Maximum=\"100\" Value=\"65\" />\n</StackPanel>",
+    "rust": null
+  },
+  {
+    "id": "progress",
+    "title": "Progress feedback",
+    "control": "ProgressBar",
+    "xaml": "<StackPanel xmlns=\"https://github.com/ferroui\" Spacing=\"20\">\n  <TextBlock Text=\"Known progress\" />\n  <ProgressBar Minimum=\"0\" Maximum=\"100\" Value=\"42\" />\n  <TextBlock Text=\"Waiting for a result\" />\n  <ProgressBar IsIndeterminate=\"True\" />\n</StackPanel>",
+    "rust": null
+  },
+  {
+    "id": "list-box",
+    "title": "Select an item",
+    "control": "ListBox",
+    "xaml": "<ListBox xmlns=\"https://github.com/ferroui\" SelectedIndex=\"1\" Height=\"180\">\n  <ListBoxItem>Design</ListBoxItem>\n  <ListBoxItem>Build</ListBoxItem>\n  <ListBoxItem>Ship</ListBoxItem>\n</ListBox>",
+    "rust": null
+  },
+  {
+    "id": "combo-box",
+    "title": "Compact selection",
+    "control": "ComboBox",
+    "xaml": "<ComboBox xmlns=\"https://github.com/ferroui\" SelectedIndex=\"0\" Width=\"220\">\n  <ComboBoxItem>Personal workspace</ComboBoxItem>\n  <ComboBoxItem>Team workspace</ComboBoxItem>\n  <ComboBoxItem>Shared workspace</ComboBoxItem>\n</ComboBox>",
+    "rust": null
+  },
+  {
+    "id": "grid",
+    "title": "A responsive form",
+    "control": "Grid",
+    "xaml": "<Grid xmlns=\"https://github.com/ferroui\" ColumnDefinitions=\"Auto,*\" RowDefinitions=\"Auto,Auto\" Margin=\"12\">\n  <TextBlock Text=\"Name\" Margin=\"0,0,16,12\" />\n  <TextBox Grid.Column=\"1\" PlaceholderText=\"Your name\" />\n  <TextBlock Grid.Row=\"1\" Text=\"Team\" Margin=\"0,0,16,0\" />\n  <TextBox Grid.Row=\"1\" Grid.Column=\"1\" PlaceholderText=\"Your team\" />\n</Grid>",
+    "rust": null
+  },
+  {
+    "id": "stack-panel",
+    "title": "Arrange a simple flow",
+    "control": "StackPanel",
+    "xaml": "<StackPanel xmlns=\"https://github.com/ferroui\" Orientation=\"Horizontal\" Spacing=\"12\">\n  <Button Content=\"Back\" />\n  <Button Content=\"Continue\" />\n  <Button Content=\"Cancel\" />\n</StackPanel>",
+    "rust": null
+  },
+  {
+    "id": "border",
+    "title": "Frame a region",
+    "control": "Border",
+    "xaml": "<Border xmlns=\"https://github.com/ferroui\" BorderBrush=\"#8EA7DC\" BorderThickness=\"1\" CornerRadius=\"12\" Padding=\"24\">\n  <TextBlock Text=\"A little breathing room.\" FontSize=\"18\" />\n</Border>",
+    "rust": null
+  },
+  {
+    "id": "text-block",
+    "title": "Readable text",
+    "control": "TextBlock",
+    "xaml": "<StackPanel xmlns=\"https://github.com/ferroui\" Spacing=\"12\">\n  <TextBlock Text=\"Type with purpose.\" FontSize=\"24\" FontWeight=\"Bold\" />\n  <TextBlock Text=\"This text wraps when the available width gets smaller. Try changing the preview width.\" TextWrapping=\"Wrap\" />\n</StackPanel>",
+    "rust": null
+  },
+  {
+    "id": "expander",
+    "title": "Optional details",
+    "control": "Expander",
+    "xaml": "<Expander xmlns=\"https://github.com/ferroui\" Header=\"More details\" IsExpanded=\"True\">\n  <TextBlock Margin=\"12\" Text=\"Keep the important information visible. Put supporting detail here.\" TextWrapping=\"Wrap\" />\n</Expander>",
+    "rust": null
+  },
+  {
+    "id": "tabs",
+    "title": "Related views",
+    "control": "TabControl",
+    "xaml": "<TabControl xmlns=\"https://github.com/ferroui\">\n  <TabItem Header=\"Overview\"><TextBlock Margin=\"16\" Text=\"The big picture.\" /></TabItem>\n  <TabItem Header=\"Details\"><TextBlock Margin=\"16\" Text=\"A closer look.\" /></TabItem>\n</TabControl>",
+    "rust": null
+  },
+  {
+    "id": "numeric",
+    "title": "Precise numeric input",
+    "control": "NumericUpDown",
+    "xaml": "<NumericUpDown xmlns=\"https://github.com/ferroui\" Minimum=\"1\" Maximum=\"20\" Value=\"4\" Increment=\"1\" Width=\"180\" />",
+    "rust": null
+  },
+  {
+    "id": "scroll",
+    "title": "A bounded scrolling region",
+    "control": "ScrollViewer",
+    "xaml": "<ScrollViewer xmlns=\"https://github.com/ferroui\" Height=\"140\">\n  <StackPanel Spacing=\"28\">\n    <TextBlock Text=\"First section\" /><TextBlock Text=\"Second section\" />\n    <TextBlock Text=\"Third section\" /><TextBlock Text=\"Fourth section\" />\n    <TextBlock Text=\"Fifth section\" />\n  </StackPanel>\n</ScrollViewer>",
+    "rust": null
+  },
+  {
+    "id": "toggle-button",
+    "title": "Toggle a local state",
+    "control": "ToggleButton",
+    "xaml": "<StackPanel xmlns=\"https://github.com/ferroui\" Orientation=\"Horizontal\" Spacing=\"12\">\n  <ToggleButton Content=\"Bold\" IsChecked=\"True\" />\n  <ToggleButton Content=\"Italic\" />\n</StackPanel>",
+    "rust": null
+  },
+  {
+    "id": "element-binding",
+    "title": "A binding that updates as you type",
+    "control": "TextBox",
+    "xaml": "<StackPanel xmlns=\"https://github.com/ferroui\"\n            xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"\n            Spacing=\"12\">\n  <TextBlock Text=\"Edit the field to update the label\" />\n  <TextBox x:Name=\"Editor\" Text=\"Hello, FerroUI\" />\n  <TextBlock x:Name=\"Echo\" Text=\"{Binding Text, ElementName=Editor}\" FontSize=\"20\" />\n</StackPanel>"
+  }
+]

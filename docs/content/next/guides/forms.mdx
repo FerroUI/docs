@@ -1,0 +1,87 @@
+---
+title: "Build and validate a form"
+description: "Bind editable fields, validate input, and preserve useful feedback when saving fails."
+sidebar:
+  order: 5
+---
+
+Model a form as editable view-model state, then bind controls to that state. Keep validation messages next to their inputs and provide a clear result for submission.
+
+This fragment uses explicit reflection bindings because it omits your application’s registered source types. See [compiled binding setup]({{BASE}}/xaml/compilation/#migrate-to-compiled-bindings-by-default) for typed XAML.
+
+```xml
+<StackPanel xmlns="https://github.com/ferroui" Spacing="8">
+  <TextBlock Text="Display name" />
+  <TextBox Text="{ReflectionBinding DisplayName, Mode=TwoWay}"
+           PlaceholderText="Enter a name" />
+  <TextBlock Text="{ReflectionBinding NameError}" />
+  <Button Content="Save" Command="{ReflectionBinding SaveCommand}" />
+</StackPanel>
+```
+
+
+## Define what the view model exposes
+
+The markup above is a view fragment. It needs a registered data context with this contract:
+
+| Property | Responsibility |
+| --- | --- |
+| `DisplayName` | Editable text; notify when it changes |
+| `NameError` | A readable error, or an empty string when valid |
+| `SaveCommand` | Validate, persist, and report the result |
+
+Keep the rule usable independently of controls. For example:
+
+```rust
+fn validate_display_name(value: &str) -> Result<(), &'static str> {
+    if value.trim().is_empty() {
+        Err("Enter a display name.")
+    } else if value.chars().count() > 80 {
+        Err("Use 80 characters or fewer.")
+    } else {
+        Ok(())
+    }
+}
+
+assert_eq!(validate_display_name("   "), Err("Enter a display name."));
+assert!(validate_display_name("Ada").is_ok());
+```
+
+Call the rule when the field changes if you want immediate feedback, and again before saving. Update `NameError` through a notifying setter. Domain-specific length rules may need grapheme counting rather than the Unicode scalar count used in this small example.
+
+The [MVVM guide]({{BASE}}/guides/mvvm/) explains property registration; the [commands guide]({{BASE}}/guides/commands/) connects `SaveCommand` to the control.
+
+## Separate editing from persistence
+
+A two-way binding changes form state. It should not save to disk or a remote service on every keystroke unless that is an intentional autosave workflow. A save command can validate the complete form, persist it, and expose success or failure state.
+
+Use domain validation for rules such as uniqueness or allowed ranges. Use control constraints, such as numeric bounds, to make invalid input less likely. Neither replaces the other when data can enter through another path.
+
+## Represent errors accessibly
+
+Do not rely only on a red border. Add an understandable message, associate the label with its input, and ensure keyboard users can reach the first invalid field. Keep user-entered values when submission fails.
+
+## Avoid update loops
+
+A setter may normalize a value, but it should raise a notification only when the effective value changes. Repeatedly setting an unchanged value can produce unnecessary binding work and make caret behavior surprising.
+
+Test the view model's validation and command availability without opening a window. Then test focus, keyboard submission, and the rendered validation state in the real application.
+
+## Verify the form
+
+Try an empty name, whitespace, a valid name, and a failed save. The message should explain the correction, a failed save should keep the text, and a second click should not start an unintended duplicate operation. Repeat with keyboard input and a long localized error message.
+
+## Try the controls
+
+import LiveSample from '@components/LiveSample.astro';
+
+Try text entry here. Validation and saving need the view-model contract described above and are not supplied by this preview.
+
+<LiveSample id="text-box" />
+
+## Public APIs and controls
+
+- [TextBox]({{BASE}}/controls/reference/textbox/) — editing and text properties.
+- [TextBlock]({{BASE}}/controls/reference/textblock/) — visible validation messages.
+- [Button]({{BASE}}/controls/reference/button/) and [`ReactiveCommand`]({{BASE}}/api/ferroui-reactiveui/reactive_command/struct-reactivecommand/) — submission and availability.
+- [`AutomationProperties`]({{BASE}}/api/ferroui-controls/automation/struct-automationproperties/) — accessible labels and relationships.

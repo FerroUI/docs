@@ -1,0 +1,5 @@
+---
+import VersionPicker from './VersionPicker.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+<div class="brand"><a class="brand-link" href={`${base}/`} aria-label="FerroUI documentation home"><span class="brand-mark" aria-hidden="true">F</span><strong>FerroUI</strong><span class="brand-docs">/ docs</span></a><VersionPicker /></div>

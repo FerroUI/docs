@@ -1,0 +1,6 @@
+---
+import Default from '@astrojs/starlight/components/Footer.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+<Default {...Astro.props} />
+<div class="docs-footer"><span>FerroUI documentation, MIT licence</span><a href="https://github.com/FerroUI/docs">Documentation source</a><a href={`${base}/tools/contributing/`}>Improve these docs</a><a href={`${base}/llms.txt`}>llms.txt</a></div>

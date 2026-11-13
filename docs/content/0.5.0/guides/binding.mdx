@@ -1,0 +1,65 @@
+---
+title: "Bind controls to application state"
+description: "Choose a binding source and direction, expose notifying properties, and diagnose missing updates."
+sidebar:
+  order: 3
+---
+
+A binding connects a target property to a value on a source object. Most view bindings use the current `DataContext`; the source must expose the properties and notifications FerroUI's binding system expects.
+
+```xml
+<StackPanel xmlns="https://github.com/ferroui" Spacing="12">
+  <TextBox Text="{ReflectionBinding SearchText, Mode=TwoWay}" />
+  <TextBlock Text="{ReflectionBinding SearchText}" />
+</StackPanel>
+```
+
+import LiveSample from '@components/LiveSample.astro';
+
+## Try a binding
+
+This example binds to another named control rather than a view model. Edit the text field in the running preview: the label follows the same public Text property and notification system used by view-model bindings.
+
+<LiveSample id="element-binding" />
+
+## Pick the binding direction
+
+Use one-way binding for values the UI only displays. Use two-way binding when a control edits view-model state. A default binding mode can be property-specific; write `Mode=TwoWay` explicitly while learning or debugging a form.
+
+A value changing in memory does not automatically update the UI. The source must notify the binding system. With ReactiveUI, use the reactive property macros or the corresponding change-notification APIs. See [MVVM]({{BASE}}/guides/mvvm/).
+
+## Source paths and names
+
+Binding paths use the markup-facing property names from registration. Rust's `search_text` field convention does not imply that `SearchText` is registered automatically. A reactive property's declared notification name and its markup metadata must agree.
+
+Use an explicit source or named-control binding when the value belongs to another control rather than the view model. Avoid replacing a container's data context just to bind one child: doing so changes every descendant binding that inherits that context.
+
+## Compiled and runtime bindings
+
+Build-time markup compiles binding paths by default and needs source type information. The untyped examples above choose `ReflectionBinding` explicitly. See [compiled binding setup]({{BASE}}/xaml/compilation/#migrate-to-compiled-bindings-by-default) for the typed form and runtime loader configuration. If a path works in an imperative Rust call but not in XAML, check registration, source type, property name, and notification behavior.
+
+## Diagnose a binding
+
+1. Confirm that the control has the intended `DataContext`.
+2. Inspect the binding path and its markup-facing names.
+3. Confirm that the source exposes a getter and, when editing, a setter.
+4. Change the source and verify a notification is raised.
+5. Check the developer tools for the target's effective value and value source.
+
+Use converters for presentation transformations. Keep business validation and domain decisions in the model or view model so they remain testable without a UI.
+
+## Choose the source intentionally
+
+| Example | Source | Use it when |
+| --- | --- | --- |
+| `{ReflectionBinding SearchText}` | Inherited data context | The value belongs to the view model |
+| `{ReflectionBinding SearchText, Mode=TwoWay}` | Writable data-context property | The user edits model state |
+| `{Binding #Query.Text}` | Named control `Query` | One view element follows another |
+
+For a model binding, start by setting the property in Rust and confirming the view updates; then edit the control and confirm the setter runs. This separates missing notifications from a missing two-way path. See [forms]({{BASE}}/guides/forms/) for the full input, validation, and submit contract.
+
+## Public APIs and controls
+
+- [`Binding`]({{BASE}}/api/ferroui-markup/data/struct-binding/) and [`BindingMode`]({{BASE}}/api/ferroui-base/data/enum-bindingmode/) — paths and update direction.
+- [`ReactiveObject`]({{BASE}}/api/ferroui-reactiveui/reactive_object/struct-reactiveobject/) — notifying source state.
+- [TextBox]({{BASE}}/controls/reference/textbox/) and [TextBlock]({{BASE}}/controls/reference/textblock/) — the editable and display targets in this guide.

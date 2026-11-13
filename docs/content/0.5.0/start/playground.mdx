@@ -1,0 +1,35 @@
+---
+title: "Try live XAML"
+description: "Edit live XAML, test real controls in WebAssembly, and download a complete example."
+sidebar:
+  order: 4
+---
+
+import LiveSample from '@components/LiveSample.astro';
+
+Edit the markup and see actual FerroUI controls update. The example runtime loads only after you press **Run example**. The Rust support is precompiled; this editor changes XAML, not arbitrary Rust code.
+
+<LiveSample id="button" />
+
+## Explore layout
+
+Try changing the column definitions or preview width. Invalid markup leaves the last successful view in place.
+
+<LiveSample id="grid" />
+
+The local playground deliberately supports a limited registered vocabulary and bundled resources. Use the complete application samples for native services and custom code.
+
+## Try a small change and check the result
+
+1. Run the button example, then change `Content` to “Save changes” and run it again.
+2. Set `IsEnabled="False"` and confirm the control no longer activates.
+3. In the Grid example, switch between `Auto,*` and `*,*` columns and narrow the preview.
+4. Introduce an unknown property to inspect its error, then reset the example.
+
+This runner supplies a theme and supported type registration. A model binding such as `{Binding SaveCommand}` still needs an application model; typing it here does not create one. Follow the [commands guide]({{BASE}}/guides/commands/) for that integration.
+
+## Public APIs and controls
+
+- [Button]({{BASE}}/controls/reference/button/) — content, enabled state, commands, and events.
+- [Grid]({{BASE}}/controls/reference/grid/) — columns, rows, and attached layout properties.
+- [XAML syntax]({{BASE}}/xaml/overview/) and [layout]({{BASE}}/design/layout/) explain the edits.

@@ -1,0 +1,73 @@
+---
+title: "Display and update collections"
+description: "Connect a notifying collection to a list, template items, and preserve selection during updates."
+sidebar:
+  order: 6
+---
+
+Use an items control to display a sequence of data, and a data template to describe one item. Avoid manually creating controls for every data object when the collection needs selection, sorting, or virtualization.
+
+This fragment uses explicit reflection bindings because it omits your application’s registered source types. See [compiled binding setup]({{BASE}}/xaml/compilation/#migrate-to-compiled-bindings-by-default) for typed XAML.
+
+```xml
+<ListBox xmlns="https://github.com/ferroui"
+         ItemsSource="{ReflectionBinding Results}"
+         SelectedItem="{ReflectionBinding SelectedResult, Mode=TwoWay}">
+  <ListBox.ItemTemplate>
+    <DataTemplate>
+      <TextBlock Text="{ReflectionBinding Name}" />
+    </DataTemplate>
+  </ListBox.ItemTemplate>
+</ListBox>
+```
+
+
+## Add items from Rust
+
+Inside an initialized application's view setup, a notifying collection can be connected directly to a list:
+
+```rust
+use std::rc::Rc;
+use ferroui_controls::{ItemsSource, ListBox};
+use ferroui_system::collections::object_model::ObservableCollection;
+
+let names = ObservableCollection::<String>::new();
+names.add("Ada".to_owned());
+let list = ListBox::new();
+list.set_items_source(Some(ItemsSource::new(Rc::new(names.clone()))));
+names.add("Grace".to_owned());
+```
+
+Add `list` to the view. Both names should appear, including the item added after assigning the source. Cloning this collection shares its state; keep a handle in the model when later commands need to edit it.
+
+For the templated XAML above, expose `Results` as an items source, `SelectedResult` as a writable notifying property, and `Name` on each item. The binding inside a data template sees the row's data context, so it reads the row's `Name` rather than a property on the whole screen.
+
+## Collection and item notifications
+
+Adding or removing a row requires a collection-change notification. Editing a property on an existing row requires that item's property-change notification. Replacing a plain Rust vector without notifying the bound property does neither automatically.
+
+FerroUI's observable collections serve straightforward UI lists. DynamicData offers change sets and transformations for applications that filter, sort, and combine changing collections. Prefer a view-model projection over rebuilding the control tree from an unrelated event handler.
+
+## Preserve identity and selection
+
+Keep stable item identities while updating data. Replacing every item object can reset selection or expanded state even when the displayed text is unchanged. Explicitly define what selection means when filtering removes the selected item.
+
+## Large data sets
+
+Give a virtualized items control a bounded viewport. Wrapping it in an unconstrained outer scrolling container may defeat virtualization. Keep templates small, avoid synchronous I/O in getters, and measure scrolling with realistic data.
+
+For hierarchical rows and columns, use the TreeDataGrid ecosystem guide; for a simple single selection, start with ListBox. [Choose a control]({{BASE}}/guides/choosing-controls/).
+
+## Try the controls
+
+import LiveSample from '@components/LiveSample.astro';
+
+This preview demonstrates selection with static items. The Rust collection example above adds model-driven updates in an application.
+
+<LiveSample id="list-box" />
+
+## Public APIs and controls
+
+- [`ObservableCollection`]({{BASE}}/api/ferroui-system/collections/object_model/struct-observablecollection/) and [`ItemsSource`]({{BASE}}/api/ferroui-controls/struct-itemssource/) — source changes visible to controls.
+- [`SourceCache`]({{BASE}}/api/ferroui-dynamic-data/cache/struct-sourcecache/) — keyed filtering and sorting; see the [DynamicData example](https://github.com/wieslawsoltes/FerroUI/blob/{{COMMIT}}/samples/ReactiveUIExample/ViewModels/dynamic_data_view_model.rs).
+- [ListBox]({{BASE}}/controls/reference/listbox/) — selection and item templates; [TreeDataGrid]({{BASE}}/controls/reference/treedatagrid/) for columns and hierarchy.

@@ -1,0 +1,10 @@
+node_modules/
+.astro/
+dist/
+src/content/docs/
+public/generated/
+public/runner/
+public/agents/
+.cache/
+test-results/
+playwright-report/

@@ -1,0 +1,94 @@
+---
+title: "Your first application"
+description: "Run a complete application, add a view, and connect its first field and action."
+sidebar:
+  order: 2
+---
+
+Start from the repository's smallest complete applications. This gives you a working platform entry point, theme, and font setup before you add your own features.
+
+## Run a complete example
+
+```sh
+cargo run -p hello-world
+```
+
+The XAML example separates three responsibilities: `program.rs` configures platform detection and starts the desktop lifetime; the application installs resources and a theme; the main window owns its content. Read `samples/HelloWorld` at the commit associated with these docs.
+
+## Add a view
+
+A view arranges controls. This example creates a labeled text input and a button; it has no dependency on a view model yet.
+
+```xml
+<StackPanel xmlns="https://github.com/ferroui"
+            Margin="24" Spacing="12">
+  <TextBlock Text="Welcome to FerroUI" FontSize="24" />
+  <TextBox PlaceholderText="Your name" />
+  <Button Content="Continue" />
+</StackPanel>
+```
+
+Set a view model as `DataContext` when the view needs application state. Controls inherit that context through their logical parent, unless you deliberately replace it on a child. [Connect a view model]({{BASE}}/guides/mvvm/).
+
+## Create controls directly in Rust
+
+```rust
+use ferroui_controls::{StackPanel, TextBlock};
+use ferroui_base::Thickness;
+
+let heading = TextBlock::new();
+heading.set_text(Some("Welcome to FerroUI"));
+heading.set_font_size(24.0);
+let panel = StackPanel::new();
+panel.set_margin(Thickness::uniform(24.0));
+panel.set_spacing(12.0);
+panel.children().add(heading);
+```
+
+A framework object is held in `Ref<T>`, a reference-counted handle with the object model's inheritance and casting behavior. Call `upcast()` when a containing API expects a base control type.
+
+## Prefer declarative composition when it fits
+
+```rust
+use ferroui_view::prelude::*;
+
+pub fn greeting() -> Element {
+    stack_panel()
+        .spacing(12.0)
+        .child(text_block().text("Welcome to FerroUI").font_size(24.0))
+        .child(button().content("Continue"))
+        .into()
+}
+```
+
+For a full application using builders, run `cargo run -p hello-world-builders`. Declarative Rust is provided by the `ferroui-view` crate, which is published with every release since 0.4.0.
+
+## Troubleshoot the first run
+
+A graphics dependency error usually indicates a missing platform toolchain, not an error in your view. A window with invisible controls usually needs a theme or a usable font. A binding that shows nothing requires a data context and correctly registered properties. Start from a known-working sample to isolate each problem.
+
+## Connect the pieces
+
+Use this small progression to keep the first application understandable:
+
+1. Run the unchanged sample and confirm that startup and shutdown work.
+2. Replace only the main view's content with the example above.
+3. Change a label and rebuild to confirm you are editing the loaded document.
+4. Add a model with a name property and [bind the text box]({{BASE}}/guides/binding/).
+5. Give Continue a [command]({{BASE}}/guides/commands/) that reads the name.
+
+The [HelloWorld project](https://github.com/wieslawsoltes/FerroUI/tree/{{COMMIT}}/samples/HelloWorld) supplies the entry point, registration, theme, fonts, and build script omitted from the small view fragments. For a self-contained interactive view, the [playground]({{BASE}}/start/playground/) also offers downloadable example projects.
+
+## Try the controls
+
+import LiveSample from '@components/LiveSample.astro';
+
+Run this small view, edit its layout, and download its complete desktop project from the example.
+
+<LiveSample id="stack-panel" />
+
+## Public APIs and controls
+
+- [`AppBuilder`]({{BASE}}/api/ferroui-controls/struct-appbuilder/) and [`Application`]({{BASE}}/api/ferroui-controls/struct-application/) — startup.
+- [StackPanel]({{BASE}}/controls/reference/stackpanel/), [TextBlock]({{BASE}}/controls/reference/textblock/), [TextBox]({{BASE}}/controls/reference/textbox/), and [Button]({{BASE}}/controls/reference/button/) — the view.
+- [`Element`]({{BASE}}/api/ferroui-view/element/enum-element/) — declarative composition.

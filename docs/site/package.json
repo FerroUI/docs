@@ -1,0 +1,37 @@
+{
+  "name": "ferroui-documentation",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev --host 127.0.0.1",
+    "generate": "node tooling/prepare.mjs",
+    "build": "npm run generate && astro build && node tooling/export.mjs && python3 tooling/package-examples.py && pagefind --site dist",
+    "check": "astro check",
+    "test": "node --test tooling/*.test.mjs",
+    "test:browser": "playwright test",
+    "preview": "astro preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@astrojs/check": "0.9.12",
+    "@astrojs/mdx": "8.1.2",
+    "@astrojs/starlight": "0.42.8",
+    "@codemirror/commands": "6.11.1",
+    "@codemirror/lang-xml": "6.1.0",
+    "@codemirror/language": "6.13.1",
+    "@codemirror/state": "6.7.6",
+    "@codemirror/view": "6.43.15",
+    "@fontsource/dm-sans": "5.3.0",
+    "@fontsource/manrope": "5.3.0",
+    "@lezer/highlight": "1.2.5",
+    "@types/sanitize-html": "2.16.2",
+    "astro": "7.4.4",
+    "fast-xml-parser": "5.11.2",
+    "marked": "18.1.2",
+    "pagefind": "1.5.2",
+    "sanitize-html": "2.18.1",
+    "typescript": "6.0.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1"
+  }
+}

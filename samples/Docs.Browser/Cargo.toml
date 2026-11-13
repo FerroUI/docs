@@ -1,0 +1,35 @@
+[package]
+name = "ferroui-docs-browser"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[[bin]]
+name = "ferroui-docs-browser"
+path = "program.rs"
+
+[dependencies]
+ferroui-base = { workspace = true, features = ["compiler-metadata", "markup-functions"] }
+ferroui-controls.workspace = true
+ferroui-markup-xaml-loader = { workspace = true, features = ["runtime"] }
+ferroui-themes-fluent.workspace = true
+ferroui-controls-color-picker.workspace = true
+ferroui-controls-treedatagrid.workspace = true
+serde_json.workspace = true
+roxmltree.workspace = true
+
+[target.'cfg(not(target_os = "emscripten"))'.dependencies]
+ferroui-opengl.workspace = true
+ferroui-themes-material.workspace = true
+ferroui-reactiveui-controls.workspace = true
+ferroui-controls-charts.workspace = true
+ferroui-controls-livecharts.workspace = true
+ferroui-controls-inking.workspace = true
+ferroui-controls-repeater.workspace = true
+
+[target.'cfg(target_os = "emscripten")'.dependencies]
+ferroui-browser.workspace = true
+ferroui-fonts-inter.workspace = true
+wasm-bindgen.workspace = true

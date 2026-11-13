@@ -1,0 +1,96 @@
+---
+import fs from 'node:fs';
+import path from 'node:path';
+import { Code } from '@astrojs/starlight/components';
+const { id = 'button' } = Astro.props;
+const version = process.env.DOCS_CONTENT_VERSION || process.env.DOCS_VERSION || 'next';
+const examples = JSON.parse(fs.readFileSync(path.join(process.env.DOCS_CONTENT_ROOT || path.resolve(process.cwd(), '../content', version), 'examples.json'), 'utf8'));
+const example = examples.find((e: { id: string }) => e.id === id);
+if (!example) throw new Error(`Unknown documentation example: ${id}`);
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const built = fs.existsSync(path.resolve(process.cwd(), 'public/runner/ferroui_docs_browser.wasm'));
+const desktopSource=fs.readFileSync(path.resolve(process.cwd(),'tooling/example-main.rs'),'utf8');
+const runtimeInfo=path.resolve(process.cwd(),'public/generated/runtime.json');
+const runtime = built && fs.existsSync(runtimeInfo) ? JSON.parse(fs.readFileSync(runtimeInfo,'utf8')) : null;
+---
+<live-sample data-example={JSON.stringify(example)} data-base={base} data-built={String(built)}>
+  <div class="sample-heading"><strong>{example.title}</strong><span>FerroUI · {process.env.DOCS_VERSION || 'next'}</span></div>
+  <div class="sample-preview"><div class="sample-placeholder"><span class="preview-symbol" aria-hidden="true">◫</span><strong>Try it for yourself</strong><p>Real controls, running in WebAssembly.<br/>The runtime downloads when you press Run.</p><button type="button" data-run>Run example <span>↗</span></button><small>{built ? `Shared runtime${runtime ? ' · '+(runtime.gzipBytes/1e6).toFixed(1)+' MB compressed' : ''} · cached across examples` : 'Build the browser runner to enable this local preview.'}</small></div></div>
+  <div class="sample-toolbar"><div><button type="button" data-tab="xaml" aria-pressed="true">XAML</button><button type="button" data-tab="rust" aria-pressed="false">Rust</button></div><div><label>Theme <select data-theme><option value="light">Light</option><option value="dark">Dark</option></select></label><button type="button" data-reset>Reset</button><button type="button" data-copy>Copy</button><a download href={`${base}/generated/examples/${id}.zip`}>Download project</a></div></div>
+  <div class="sample-xaml"><div data-editor><Code code={example.xaml} lang="xml" /></div><button type="button" data-edit>Edit XAML</button></div>
+  <div class="sample-rust" hidden><Code code={desktopSource} lang="rust" /></div>
+  <div class="sample-settings"><label><input type="checkbox" data-enabled checked /> Enabled</label><label>Preview width <select data-width><option value="100%">Responsive</option><option value="320px">320 px</option><option value="480px">480 px</option><option value="768px">768 px</option></select></label><button type="button" data-restart>Restart preview</button><span data-sample-status role="status" aria-live="polite">Ready to explore</span></div>
+  <pre class="sample-error" hidden role="alert"></pre>
+</live-sample>
+<script>
+  class LiveSample extends HTMLElement {
+    frame: HTMLIFrameElement | null = null;
+    editor: { text(): string; reset(text: string): void; destroy(): void } | null = null;
+    controller = new AbortController();
+    example!: { id: string; title: string; xaml: string; rust?: string };
+    ready = false;
+    sequence = 0;
+    connectedCallback() {
+      this.example = JSON.parse(this.dataset.example!);
+      const signal = this.controller.signal;
+      const listen = (selector: string, action: (event: Event) => void, type = 'click') => this.querySelector(selector)?.addEventListener(type, action, { signal });
+      listen('[data-run]', () => this.run());
+      listen('[data-restart]', () => this.run());
+      listen('[data-edit]', () => this.edit());
+      listen('[data-reset]', () => { this.editor?.reset(this.example.xaml); this.querySelector<HTMLInputElement>('[data-enabled]')!.checked = true; this.apply(); });
+      listen('[data-copy]', async () => { try { const rust=(this.querySelector('.sample-xaml') as HTMLElement).hidden; const text=rust?this.querySelector('.sample-rust code')!.textContent!:this.editor?.text() || this.example.xaml; await navigator.clipboard.writeText(text); this.status(rust?'Copied Rust':'Copied XAML'); } catch { this.status('Select the source to copy it.'); } });
+      listen('[data-theme]', () => this.theme(), 'change');
+      listen('[data-enabled]', () => this.apply(), 'change');
+      listen('[data-width]', () => { if (this.frame) this.frame.style.width = this.querySelector<HTMLSelectElement>('[data-width]')!.value; }, 'change');
+      this.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach((button) => button.addEventListener('click', () => {
+        const rust = button.dataset.tab === 'rust';
+        (this.querySelector('.sample-xaml') as HTMLElement).hidden = rust;
+        (this.querySelector('.sample-rust') as HTMLElement).hidden = !rust;
+        this.querySelectorAll('[data-tab]').forEach((b) => b.setAttribute('aria-pressed', String(b === button)));
+      }, { signal }));
+      addEventListener('message', (event) => {
+        if (event.origin !== location.origin || event.source !== this.frame?.contentWindow || event.data?.protocol !== 'ferroui-docs/1') return;
+        if(event.data.requestId!=null&&event.data.requestId!==this.sequence)return;
+        if (event.data.type === 'ready') { this.ready = true; this.theme(); this.apply(); }
+        if (event.data.type === 'applied') { this.dataset.renderRevision=String(event.data.requestId); (this.querySelector('.sample-error') as HTMLElement).hidden = true; this.status('Preview updated'); }
+        if (event.data.type === 'error') this.error(event.data.message);
+      }, { signal });
+    }
+    status(message: string) { this.querySelector('[data-sample-status]')!.textContent = message; }
+    error(message: string) { const e = this.querySelector<HTMLElement>('.sample-error')!; e.textContent = message; e.hidden = false; this.status('Preview could not update'); }
+    send(type: string, payload = {}) { this.frame?.contentWindow?.postMessage({ protocol: 'ferroui-docs/1', type, ...payload }, location.origin); }
+    run() {
+      if (this.dataset.built !== 'true') { this.error('Build the runtime with: scripts/build-browser.sh ferroui-docs-browser --out docs/site/public/runner, then rebuild the documentation.'); return; }
+      this.frame?.remove(); this.ready = false;
+      const frame = document.createElement('iframe');
+      frame.style.width=this.querySelector<HTMLSelectElement>('[data-width]')!.value;
+      frame.title = this.example.title; frame.src = `${this.dataset.base}/runner/index.html?Threads=false`;
+      frame.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+      this.querySelector('.sample-preview')!.replaceChildren(frame); this.frame = frame;
+      this.status('Downloading and starting WebAssembly…');
+    }
+    theme() { this.send('theme', { theme: this.querySelector<HTMLSelectElement>('[data-theme]')!.value }); }
+    apply() {
+      if (!this.ready) return;
+      let xaml = this.editor?.text() || this.example.xaml;
+      if (!this.querySelector<HTMLInputElement>('[data-enabled]')!.checked) {
+        const parsed = new DOMParser().parseFromString(xaml, 'application/xml');
+        if (!parsed.querySelector('parsererror')) { parsed.documentElement.setAttribute('IsEnabled', 'False'); xaml = new XMLSerializer().serializeToString(parsed); }
+      }
+      this.send('apply', { xaml, requestId: ++this.sequence });
+    }
+    async edit() {
+      if (this.editor) return;
+      const { makeEditor } = await import('../scripts/editor');
+      if (!this.isConnected) return;
+      const target = this.querySelector<HTMLElement>('[data-editor]')!;
+      target.replaceChildren(); this.editor = makeEditor(target, this.example.xaml, () => this.apply());
+      (this.querySelector('[data-edit]') as HTMLElement).hidden = true;
+    }
+    disconnectedCallback() { this.controller.abort(); this.editor?.destroy(); this.frame?.remove(); }
+  }
+  if (!customElements.get('live-sample')) customElements.define('live-sample', LiveSample);
+</script>
+<style>
+  live-sample{display:block;border:1px solid var(--sl-color-hairline);border-radius:10px;overflow:hidden;margin:1.5rem 0;background:var(--sl-color-bg)}.sample-heading{padding:.85rem 1rem;display:flex;justify-content:space-between;gap:1rem;border-bottom:1px solid var(--sl-color-hairline);font-size:.78rem}.sample-heading span{font-size:.65rem;color:var(--sl-color-gray-3)}.sample-preview{min-height:260px;background:var(--sl-color-bg-sidebar);display:flex;align-items:stretch;justify-content:center;overflow:auto}.sample-preview iframe{width:100%;height:300px;border:0;background:white;flex-shrink:0}.sample-placeholder{display:flex;flex-direction:column;align-items:center;text-align:center;padding:1.5rem;font-size:.8rem}.preview-symbol{font-size:1.8rem;color:var(--sl-color-accent)}.sample-placeholder p{font-size:.75rem;color:var(--sl-color-gray-3);margin:.5rem 0 1rem}.sample-placeholder button{background:#2459e0;color:white;border:0;border-radius:6px;padding:.6rem 1rem;font-weight:500}.sample-placeholder small{font-size:.6rem;color:var(--sl-color-gray-3);margin-top:.65rem}.sample-toolbar{display:flex;justify-content:space-between;gap:.5rem;align-items:center;border-block:1px solid var(--sl-color-hairline);padding:.4rem .6rem;flex-wrap:wrap}.sample-toolbar>div{display:flex;gap:.5rem;align-items:center}.sample-toolbar button,.sample-toolbar a,[data-edit]{font:inherit;font-size:.7rem;border:0;background:transparent;color:var(--sl-color-text);padding:.3rem .5rem;cursor:pointer;text-decoration:none}.sample-toolbar button[aria-pressed=true]{background:var(--sl-color-accent-low);color:var(--sl-color-accent);border-radius:4px}.sample-toolbar label{font-size:.65rem}.sample-toolbar select,.sample-settings select{font:inherit;color:inherit;background:transparent;border:1px solid var(--sl-color-hairline);border-radius:4px;padding:.15rem}.sample-settings{display:flex;gap:1.2rem;align-items:center;flex-wrap:wrap;font-size:.65rem;padding:.6rem 1rem;border-top:1px solid var(--sl-color-hairline)}.sample-settings label{display:flex;align-items:center;gap:.4rem}.sample-settings [role=status]{margin-left:auto;color:var(--sl-color-gray-3)}.sample-error{white-space:pre-wrap;color:#bf3444;padding:1rem;font-size:.75rem;border:0;margin:0}.sample-xaml>[data-edit][hidden]{display:none}.sample-xaml>[data-edit]{display:block;margin:.3rem .6rem}.sample-xaml :global(.expressive-code),.sample-rust :global(.expressive-code){margin:0}.sample-xaml :global(pre),.sample-rust :global(pre){border:0;border-radius:0!important;font-size:.75rem!important}.sample-xaml :global(.cm-editor){font-size:.78rem;max-height:400px;overflow:auto}.sample-xaml :global(.cm-content){font-family:var(--sl-font-mono);padding:1rem 0}.sample-xaml :global(.cm-gutters){background:var(--sl-color-bg-sidebar);color:var(--sl-color-gray-3);border:0}.sample-xaml :global(.cm-focused){outline:0}
+</style>

@@ -1,0 +1,15 @@
+---
+import Default from '@astrojs/starlight/components/PageTitle.astro';
+import {topicsFor} from '../data/navigation';
+const topics = topicsFor(process.env.DOCS_VERSION || 'next');
+const base=import.meta.env.BASE_URL.replace(/\/$/,'');
+const route=Astro.url.pathname.slice(base.length+1).replace(/\/$/,'');
+const section=route.split('/')[0]||'start';
+const group=topics.find(g=>g.items.some(([,slug])=>slug===route));
+const version=process.env.DOCS_VERSION||'next';
+---
+{route&&<nav class="article-location" aria-label="Breadcrumb"><a href={`${base}/`}>Docs</a><span aria-hidden="true">/</span><a href={`${base}/topics/${group?'#'+group.id:''}`}>{group?.title||'All topics'}</a><span class="article-version">{version==='next'?'Next · unreleased':'v'+version}</span></nav>}
+<Default {...Astro.props}/>
+<span hidden data-pagefind-filter="section">{section}</span>
+<span hidden data-pagefind-filter="version">{version}</span>
+<style>.article-location{display:flex;align-items:center;flex-wrap:wrap;gap:.6rem;font-size:.75rem;margin-bottom:1rem;color:var(--sl-color-gray-3)}.article-location a{color:inherit;text-decoration:none}.article-location a:hover{color:var(--sl-color-accent);text-decoration:underline}.article-version{margin-left:auto;font-size:.65rem;padding:.2rem .5rem;border:1px solid var(--sl-color-hairline);border-radius:5px}</style>

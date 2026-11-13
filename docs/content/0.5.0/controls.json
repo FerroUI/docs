@@ -1,0 +1,317 @@
+{
+  "Button": {
+    "category": "Input",
+    "summary": "Triggers an action such as saving or continuing.",
+    "when": "Bind Command for application actions. Use click handlers for view-local behavior.",
+    "pitfalls": "A command that cannot execute can disable the button; inspect CanExecute before overriding IsEnabled.",
+    "accessibility": "Tab moves focus; Space and Enter activate according to focus and default-button behavior."
+  },
+  "RepeatButton": {
+    "category": "Input",
+    "summary": "Repeats an action while held.",
+    "when": "Use for incremental adjustments rather than form submission.",
+    "pitfalls": "Avoid expensive synchronous work on every repeated invocation.",
+    "accessibility": "Keep an understandable name and visible focus."
+  },
+  "ToggleButton": {
+    "category": "Input",
+    "summary": "Represents a selected action or mode.",
+    "when": "Use for persistent modes such as bold formatting.",
+    "pitfalls": "Bind checked state rather than inferring it from colors.",
+    "accessibility": "Expose checked state and visible focus."
+  },
+  "CheckBox": {
+    "category": "Input",
+    "summary": "Edits an independent boolean or optional boolean choice.",
+    "when": "Use when several independent choices can be selected.",
+    "pitfalls": "Three-state values include indeterminate; do not treat null as false by accident.",
+    "accessibility": "Provide a content label; Space toggles the focused option."
+  },
+  "RadioButton": {
+    "category": "Input",
+    "summary": "Chooses one option in a group.",
+    "when": "Use for a small visible set of mutually exclusive choices.",
+    "pitfalls": "Give unrelated groups distinct group names.",
+    "accessibility": "Verify keyboard navigation between options and label the group."
+  },
+  "ToggleSwitch": {
+    "category": "Input",
+    "summary": "Turns an immediate setting on or off.",
+    "when": "Use for a binary setting with clear effects.",
+    "pitfalls": "Do not use a switch for a one-time action such as Save.",
+    "accessibility": "Label the setting independently of its on/off value."
+  },
+  "Slider": {
+    "category": "Input",
+    "summary": "Adjusts a value within a numeric range.",
+    "when": "Use for approximate adjustment such as volume.",
+    "pitfalls": "Set meaningful bounds and increments; use numeric input for precision.",
+    "accessibility": "Verify keyboard increments and an understandable name/value."
+  },
+  "NumericUpDown": {
+    "category": "Input",
+    "summary": "Edits a numeric value with increment controls.",
+    "when": "Use when a precise value and explicit increment matter.",
+    "pitfalls": "Choose bounds, culture, formatting, and invalid-input behavior deliberately.",
+    "accessibility": "Label the field and communicate errors with text."
+  },
+  "ComboBox": {
+    "category": "Input",
+    "summary": "Chooses an item in a compact popup list.",
+    "when": "Use when space is limited and options need not remain visible.",
+    "pitfalls": "Preserve stable selected-item identities across updates.",
+    "accessibility": "Test opening, navigating, choosing, and dismissing by keyboard."
+  },
+  "TextBox": {
+    "category": "Text",
+    "summary": "Edits plain text.",
+    "when": "Configure wrapping and return acceptance for multiline content.",
+    "pitfalls": "Placeholder text is a hint, not a persistent label. Avoid resetting Text on each keystroke.",
+    "accessibility": "Provide a label, visible focus, and accessible validation messages."
+  },
+  "TextBlock": {
+    "category": "Text",
+    "summary": "Displays lightweight read-only text.",
+    "when": "Use for headings, labels, and short content.",
+    "pitfalls": "A fixed-height parent can clip wrapped or scaled text.",
+    "accessibility": "Allow text growth and keep foreground/background contrast readable."
+  },
+  "SelectableTextBlock": {
+    "category": "Text",
+    "summary": "Displays text users can select and copy.",
+    "when": "Use for identifiers, messages, and reference values.",
+    "pitfalls": "Give the content enough room to select it.",
+    "accessibility": "Test keyboard selection and copy."
+  },
+  "Label": {
+    "category": "Text",
+    "summary": "Associates descriptive text with another control.",
+    "when": "Use for persistent field labels and access-key relationships.",
+    "pitfalls": "A visual text label does not automatically establish a target relationship.",
+    "accessibility": "Verify focus moves to the associated target."
+  },
+  "RichTextBlock": {
+    "category": "Text",
+    "summary": "Displays document-like structured rich text.",
+    "when": "Use for paragraphs and inlines beyond simple labels.",
+    "pitfalls": "Test mixed scripts, long documents, and formatting boundaries.",
+    "accessibility": "Verify reading behavior with the actual platform accessibility bridge."
+  },
+  "RichEditBox": {
+    "category": "Text",
+    "summary": "Edits rich document content.",
+    "when": "Use for document editing and formatting workflows.",
+    "pitfalls": "Document/selection APIs are richer than a plain TextBox Text value.",
+    "accessibility": "Test input methods, selection, keyboard editing, and screen readers."
+  },
+  "Grid": {
+    "category": "Layout",
+    "summary": "Arranges children into rows and columns.",
+    "when": "Use for forms and regions dividing available space.",
+    "pitfalls": "Star sizing needs a meaningful parent constraint.",
+    "accessibility": "Preserve a sensible reading and tab order."
+  },
+  "StackPanel": {
+    "category": "Layout",
+    "summary": "Arranges children along one axis.",
+    "when": "Use for a short vertical or horizontal flow.",
+    "pitfalls": "An unconstrained stacking axis can defeat list virtualization.",
+    "accessibility": "Keep child order meaningful when changing orientation."
+  },
+  "WrapPanel": {
+    "category": "Layout",
+    "summary": "Wraps children onto additional lines.",
+    "when": "Use for tags, tiles, and tools that can flow.",
+    "pitfalls": "Wrapping alone does not provide item virtualization.",
+    "accessibility": "Check reading and keyboard order as line breaks change."
+  },
+  "DockPanel": {
+    "category": "Layout",
+    "summary": "Places children on edges around remaining content.",
+    "when": "Use for a toolbar, status region, and central content.",
+    "pitfalls": "Child order and last-child fill affect allocation.",
+    "accessibility": "Keep edge regions usable in small windows."
+  },
+  "Canvas": {
+    "category": "Layout",
+    "summary": "Positions content using explicit coordinates.",
+    "when": "Use when coordinates are intrinsic, such as a diagram.",
+    "pitfalls": "Absolute positions do not adapt automatically to localization or text growth.",
+    "accessibility": "Provide a semantic keyboard model for interactive content."
+  },
+  "UniformGrid": {
+    "category": "Layout",
+    "summary": "Arranges children in equally sized cells.",
+    "when": "Use for regular grids with equal visual weight.",
+    "pitfalls": "Equal cell sizing differs from content-based Grid sizing.",
+    "accessibility": "Preserve meaningful row/column order."
+  },
+  "Border": {
+    "category": "Layout",
+    "summary": "Draws a frame, background, and padding around one child.",
+    "when": "Use for decorative or grouped content.",
+    "pitfalls": "A clickable Border does not supply Button semantics.",
+    "accessibility": "Do not add focus stops for purely decorative regions."
+  },
+  "Viewbox": {
+    "category": "Layout",
+    "summary": "Scales a child to fit available space.",
+    "when": "Use for scalable artwork with a known logical size.",
+    "pitfalls": "Scaling an entire form can make text and targets too small.",
+    "accessibility": "Check readability and target size at every viewport."
+  },
+  "ScrollViewer": {
+    "category": "Layout",
+    "summary": "Provides a bounded scrolling viewport.",
+    "when": "Use when content overflows and does not own scrolling.",
+    "pitfalls": "Nested scrolling can confuse input and undermine virtualization.",
+    "accessibility": "Test keyboard scrolling and focus into off-screen content."
+  },
+  "ContentControl": {
+    "category": "Layout",
+    "summary": "Hosts a content value or data-template presentation.",
+    "when": "Use for changing views or templated data.",
+    "pitfalls": "Release subscriptions when discarded content leaves the view.",
+    "accessibility": "Decide where focus belongs after content changes."
+  },
+  "UserControl": {
+    "category": "Layout",
+    "summary": "Packages a reusable composition of controls.",
+    "when": "Use for a reusable view; use a templated control for replaceable visuals.",
+    "pitfalls": "Avoid overwriting the inherited DataContext accidentally.",
+    "accessibility": "Keep the composition's reading and tab order meaningful."
+  },
+  "ListBox": {
+    "category": "Collections",
+    "summary": "Displays items with selection.",
+    "when": "Use for a visible list of selectable records.",
+    "pitfalls": "Distinguish item-change from collection-change notifications and bound the viewport.",
+    "accessibility": "Test selection mode and arrow-key navigation."
+  },
+  "ItemsControl": {
+    "category": "Collections",
+    "summary": "Presents repeated data through templates.",
+    "when": "Use when repeated content needs no built-in selection model.",
+    "pitfalls": "Displaying items does not automatically establish selection.",
+    "accessibility": "Provide a keyboard model for interactive item content."
+  },
+  "TreeView": {
+    "category": "Collections",
+    "summary": "Displays expandable hierarchical items.",
+    "when": "Use for navigable hierarchies.",
+    "pitfalls": "Keep stable identities and define how expansion survives data changes.",
+    "accessibility": "Test expand/collapse and selection without a pointer."
+  },
+  "TreeDataGrid": {
+    "category": "Collections",
+    "summary": "Displays flat or hierarchical data in columns.",
+    "when": "Use when row hierarchy and tabular cells belong together.",
+    "pitfalls": "Use the grid's source and column contracts rather than ListBox templates.",
+    "accessibility": "Test cell navigation, selection, and expansion."
+  },
+  "TabControl": {
+    "category": "Navigation",
+    "summary": "Switches between related peer views.",
+    "when": "Use for a small set of persistent destinations.",
+    "pitfalls": "Define whether changing tabs preserves state and retains expensive content.",
+    "accessibility": "Check keyboard tab selection and focus transfer."
+  },
+  "NavigationView": {
+    "category": "Navigation",
+    "summary": "Provides a primary navigation shell.",
+    "when": "Use for top-level destinations with a responsive navigation pane.",
+    "pitfalls": "Selected navigation items are not automatically the application's route.",
+    "accessibility": "Keep compact and expanded modes understandable."
+  },
+  "Frame": {
+    "category": "Navigation",
+    "summary": "Hosts page navigation with history.",
+    "when": "Use for forward/back workflows.",
+    "pitfalls": "Choose how page/view-model instances are cached and restored.",
+    "accessibility": "Make the new context and focus destination clear."
+  },
+  "SplitView": {
+    "category": "Navigation",
+    "summary": "Combines a collapsible pane with content.",
+    "when": "Use for responsive tools or side navigation.",
+    "pitfalls": "A pane is a layout mechanism, not a full route model.",
+    "accessibility": "Test overlay focus and restoration."
+  },
+  "Expander": {
+    "category": "Navigation",
+    "summary": "Reveals supporting content below a header.",
+    "when": "Use for optional details.",
+    "pitfalls": "Do not hide required error feedback in collapsed content.",
+    "accessibility": "Communicate header purpose and expansion state."
+  },
+  "Menu": {
+    "category": "Navigation",
+    "summary": "Groups application commands.",
+    "when": "Use for commands requiring predictable submenu behavior.",
+    "pitfalls": "Keep availability and presentation synchronized.",
+    "accessibility": "Test keyboard traversal, Escape, and focus restoration."
+  },
+  "ContextMenu": {
+    "category": "Navigation",
+    "summary": "Offers commands related to a target.",
+    "when": "Use as an alternative entry point for contextual actions.",
+    "pitfalls": "Do not make an essential action available only by right-click.",
+    "accessibility": "Test keyboard invocation and return focus."
+  },
+  "ProgressBar": {
+    "category": "Feedback",
+    "summary": "Displays measurable progress or an indeterminate wait.",
+    "when": "Use a range for known progress and indeterminate state otherwise.",
+    "pitfalls": "Do not fabricate precise progress from an arbitrary timer.",
+    "accessibility": "Supply understandable text status as well as animation."
+  },
+  "ToolTip": {
+    "category": "Feedback",
+    "summary": "Displays brief supporting information.",
+    "when": "Use for supplementary explanations.",
+    "pitfalls": "Do not put essential labels or validation only in a tooltip.",
+    "accessibility": "Ensure keyboard users can obtain important information."
+  },
+  "Calendar": {
+    "category": "Input",
+    "summary": "Selects dates within a calendar presentation.",
+    "when": "Use when surrounding dates help the choice.",
+    "pitfalls": "Distinguish a date-only value from a timestamp/time zone.",
+    "accessibility": "Test date navigation and localized presentation."
+  },
+  "DatePicker": {
+    "category": "Input",
+    "summary": "Selects a date in a compact field.",
+    "when": "Use for dates such as birthdays or deadlines.",
+    "pitfalls": "Do not silently interpret a date-only value as UTC.",
+    "accessibility": "Label the field and verify keyboard entry."
+  },
+  "TimePicker": {
+    "category": "Input",
+    "summary": "Selects a time of day.",
+    "when": "Use for clock times with an explicit domain meaning.",
+    "pitfalls": "Define time-zone and daylight-saving handling in the model.",
+    "accessibility": "Test 12/24-hour input and keyboard behavior."
+  },
+  "ColorPicker": {
+    "category": "Input",
+    "summary": "Selects a color value.",
+    "when": "Use when color selection is part of the task.",
+    "pitfalls": "Define alpha handling and serialization explicitly.",
+    "accessibility": "Provide textual color values and keyboard-operable controls."
+  },
+  "NativeControlHost": {
+    "category": "Advanced",
+    "summary": "Embeds a platform-native child control.",
+    "when": "Use for operating-system views or external native surfaces.",
+    "pitfalls": "Clipping, transforms, focus, and lifetime differ by platform.",
+    "accessibility": "Verify native accessibility and keyboard integration on real targets."
+  },
+  "Window": {
+    "category": "Advanced",
+    "summary": "Hosts a desktop top-level surface.",
+    "when": "Use for desktop windows and keep shared content in a reusable view.",
+    "pitfalls": "A desktop Window is not the browser or mobile main-view contract.",
+    "accessibility": "Test title, focus, system shortcuts, and accessible naming."
+  }
+}

@@ -1,0 +1,30 @@
+---
+const version = process.env.DOCS_VERSION || 'next';
+const root = import.meta.env.BASE_URL.replace(/\/$/, '').replace(/\/[^/]+$/, '');
+---
+<label class="version-picker"><span class="sr-only">Documentation version</span><select data-version-picker data-root={root} data-current={version} aria-label="Documentation version"><option value={version}>{version === 'next' ? 'Next · unreleased' : `v${version}`}</option></select></label>
+<script>
+  document.querySelectorAll<HTMLSelectElement>('[data-version-picker]').forEach(async (select) => {
+    const root = select.dataset.root!;
+    try {
+      const response = await fetch(`${root}/versions.json`);
+      if (!response.ok) return;
+      const { versions } = await response.json();
+      for (const item of versions) {
+        if (item.id !== select.dataset.current) select.add(new Option(item.label, item.id));
+      }
+    } catch { /* A standalone version is still fully usable. */ }
+    select.addEventListener('change', async () => {
+      const currentPrefix = `${root}/${select.dataset.current}/`;
+      const slug = location.pathname.startsWith(currentPrefix) ? location.pathname.slice(currentPrefix.length) : '';
+      const destination = `${root}/${encodeURIComponent(select.value)}/`;
+      try {
+        const response = await fetch(`${destination}agents/routes.json`);
+        if (response.ok && (await response.json()).includes(slug)) {
+          location.assign(destination + slug + location.hash); return;
+        }
+      } catch { /* The version landing page remains the fallback. */ }
+      location.assign(destination + `?unavailable=${encodeURIComponent(slug)}`);
+    });
+  });
+</script>

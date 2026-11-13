@@ -1,0 +1,21 @@
+---
+import { topicsFor } from '../data/navigation';
+const topics = topicsFor(process.env.DOCS_VERSION || 'next');
+const base=import.meta.env.BASE_URL.replace(/\/$/,'');
+const route=Astro.url.pathname.slice(base.length+1).replace(/\/$/,'');
+---
+<topic-navigation>
+ <a class="all-topics" href={`${base}/topics/`} aria-current={route==='topics'?'page':undefined}>Browse all topics <span aria-hidden="true">↗</span></a>
+ <label class="nav-filter"><span>Find a topic</span><input type="search" placeholder="Filter topics…" aria-label="Filter navigation topics" /></label>
+ <nav aria-label="Documentation topics">{topics.map(group=><details open={group.items.some(([,slug])=>slug===route)} data-group><summary>{group.title}</summary><ul>{group.items.map(([label,slug])=><li data-topic={`${label} ${group.title}`.toLowerCase()}><a href={`${base}/${slug}/`} aria-current={slug===route?'page':undefined}>{label}</a></li>)}</ul></details>)}</nav>
+ <p data-empty hidden>No matching topics. Use the search at the top of the page to search article text and API names.</p>
+ <a class="nav-help" href={`${base}/tools/troubleshooting/`}>Something not working? →</a>
+</topic-navigation>
+<script>
+class TopicNavigation extends HTMLElement {
+ connectedCallback(){const input=this.querySelector('input')!;const groups=[...this.querySelectorAll('details')];let previous:boolean[]|null=null;input.addEventListener('input',()=>{const query=input.value.trim().toLowerCase();if(query&&!previous)previous=groups.map(g=>g.open);let total=0;for(const [i,group]of groups.entries()){let count=0;for(const item of group.querySelectorAll<HTMLElement>('[data-topic]')){item.hidden=!!query&&!item.dataset.topic!.includes(query);if(!item.hidden)count++}group.hidden=count===0;if(query)group.open=count>0;else if(previous)group.open=previous[i];total+=count}if(!query)previous=null;(this.querySelector('[data-empty]')as HTMLElement).hidden=total>0});}
+}if(!customElements.get('topic-navigation'))customElements.define('topic-navigation',TopicNavigation);
+</script>
+<style>
+topic-navigation{display:block;font-size:.85rem}.all-topics{display:flex;justify-content:space-between;padding:.7rem .5rem;text-decoration:none;font-weight:600;color:var(--sl-color-white)}.nav-filter{display:block;margin:.75rem 0 1.4rem}.nav-filter span{display:block;font-size:.7rem;color:var(--sl-color-gray-3);margin-bottom:.4rem}.nav-filter input{width:100%;box-sizing:border-box;padding:.6rem .7rem;font:inherit;border:1px solid var(--sl-color-hairline);border-radius:7px;background:var(--sl-color-bg);color:var(--sl-color-white)}details{margin:.6rem 0}summary{padding:.5rem 0;cursor:pointer;font-weight:600;color:var(--sl-color-white);font-size:.8rem}ul{list-style:none;margin:.3rem 0 1rem;padding:0 0 0 .6rem;border-left:1px solid var(--sl-color-hairline)}li a{display:block;padding:.45rem .65rem;color:var(--sl-color-text);text-decoration:none;border-radius:5px;font-size:.8rem;line-height:1.5}li a:hover{background:var(--sl-color-bg)}a[aria-current=page]{background:var(--sl-color-accent-low);color:var(--sl-color-accent-high);font-weight:600}.nav-help{display:block;margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--sl-color-hairline);font-size:.75rem;color:var(--sl-color-gray-3)}[data-empty]{font-size:.8rem;line-height:1.6}[hidden]{display:none!important}
+</style>

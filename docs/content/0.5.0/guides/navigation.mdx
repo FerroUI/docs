@@ -1,0 +1,79 @@
+---
+title: "Navigate between views"
+description: "Choose tabs or routed views and keep page state, history, and cleanup predictable."
+sidebar:
+  order: 7
+---
+
+A navigation model owns where the application is and how users return. Separate that model from the presentation of a navigation bar, tabs, or a side pane.
+
+
+## Start with two tabs
+
+For a small settings screen, the control can own the selection without a route service:
+
+```xml
+<TabControl xmlns="https://github.com/ferroui">
+  <TabItem Header="General">
+    <StackPanel Margin="16" Spacing="8">
+      <TextBlock Text="General settings" />
+      <CheckBox Content="Show tips at startup" />
+    </StackPanel>
+  </TabItem>
+  <TabItem Header="Account">
+    <TextBlock Margin="16" Text="Account settings" />
+  </TabItem>
+</TabControl>
+```
+
+Switch tabs with both pointer and keyboard. Move each page into a reusable `UserControl` as it grows. If a destination needs a record ID, browser URL, or back stack, introduce an explicit navigation model rather than treating tab positions as routes.
+
+## Choose the model
+
+Use a small content host when the application has a few independent views. Use `Frame` and page navigation for a stack/history workflow. Use a NavigationView when the shell needs a top-level navigation structure. Declarative applications can use the router provided by `ferroui-view`.
+
+A navigation control's selection is not automatically your application's route. Synchronize them deliberately, including back navigation and programmatic changes.
+
+## Own view state deliberately
+
+Decide whether returning to a page recreates it or restores an existing view model. A details page may need a stable record identifier rather than a reference to a particular control instance. Keep persisted application state out of transient view objects.
+
+## Browser considerations
+
+The browser has its own history and URL. If users must bookmark a location, map routes to that URL explicitly. A native page stack alone does not establish a browser deep-link contract.
+
+## Lifetimes and cleanup
+
+Cancel obsolete loads, release subscriptions, and stop timers when leaving a view. If views are intentionally cached, distinguish being retained from being active. A cached view should not continue expensive work merely because an object still owns it.
+
+Test forward, back, repeated navigation to the same destination, missing records, and errors during asynchronous page loading.
+
+## Connect a routed view model
+
+ReactiveUI applications can let a screen own `RoutingState` and host its current page with this view fragment:
+
+```xml
+<rxui:RoutedViewHost xmlns="https://github.com/ferroui"
+                    xmlns:rxui="using:ReactiveUI.FerroUI"
+                    Router="{ReflectionBinding Router}">
+  <rxui:RoutedViewHost.DefaultContent>
+    <TextBlock Text="Select a page to begin." />
+  </rxui:RoutedViewHost.DefaultContent>
+</rxui:RoutedViewHost>
+```
+
+Initialize ReactiveUI, register its markup types and your view mappings, and expose `Router` on the screen's data context. `navigate`, `navigate_and_reset`, and `navigate_back` are commands; subscribe to the returned execution observable to execute them. See the complete [screen view model](https://github.com/wieslawsoltes/FerroUI/blob/{{COMMIT}}/samples/ReactiveUIExample/ViewModels/main_view_model.rs) for construction and routing errors.
+
+## Try the controls
+
+import LiveSample from '@components/LiveSample.astro';
+
+Switch between the views with pointer and keyboard. This example demonstrates local tab selection without a route service.
+
+<LiveSample id="tabs" />
+
+## Public APIs and controls
+
+- [TabControl]({{BASE}}/controls/reference/tabcontrol/), [Frame]({{BASE}}/controls/reference/frame/), and [NavigationView]({{BASE}}/controls/reference/navigationview/) — choose a navigation presentation.
+- [`RoutingState`]({{BASE}}/api/ferroui-reactiveui/routing/struct-routingstate/) and [`RoutedViewHost`]({{BASE}}/api/ferroui-reactiveui-controls/struct-routedviewhost/) — routed MVVM screens.
+- [`ViewModelViewHost`]({{BASE}}/api/ferroui-reactiveui-controls/struct-viewmodelviewhost/) — locate a view for a model without a navigation stack.
