@@ -64,7 +64,7 @@ fn configure() -> Result<TranslationService, Box<dyn std::error::Error>> {
 }
 ```
 
-Retain the service for the application lifetime. Changing its culture should update bound translations without rebuilding the view.
+Retain the service for the application lifetime. Changing its culture should update bound translations without rebuilding the view. The generated typed accessors (`strings.format_hello(..)`) are ordinary Rust calls, so code outside XAML, including declarative views, can call them; a call returns the text for the current culture, so such a view reads it again after a culture change. The XAML extensions below bind translations in markup and follow the culture themselves.
 
 ## 4. Bind formatted text in XAML
 

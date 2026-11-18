@@ -15,6 +15,7 @@ For the published 0.5.0 release:
 [dependencies]
 ferroui-base = "=0.5.0"
 ferroui-controls = "=0.5.0"
+ferroui-view = { version = "=0.5.0", features = ["desktop"] }
 ferroui-themes-fluent = "=0.5.0"
 ```
 

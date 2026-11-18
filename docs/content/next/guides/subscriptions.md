@@ -32,8 +32,31 @@ drop(subscription);
 
 Do not assign a guard to `let _ = ...`; it would be dropped immediately. Call `detach()` only when you intentionally want observation to continue independently of the guard. Avoid closures that strongly retain the view that owns the subscription; capture a weak handle if the callback needs to update that view.
 
+## Declarative views own their effects
+
+In a declarative view, signals, memos, effects, and hooks belong to an owner that ends with the mounted tree, an item of a dynamic list, or a component. Register the release of an outside subscription with `on_cleanup` where you create it:
+
+```rust
+use ferroui_reactive::{IObservable, ObservableExt};
+use ferroui_view::prelude::*;
+use std::rc::Rc;
+
+#[component(rerender)]
+fn QueryLog(query_changes: Rc<dyn IObservable<String>>) -> Element {
+    use_effect_with((), move |_| {
+        let subscription = query_changes.subscribe_next_guard(|query: String| {
+            println!("Query changed: {query}");
+        });
+        on_cleanup(move || drop(subscription));
+    });
+    rsx! { TextBlock { text: "Watching queries" } }
+}
+```
+
+The cleanup runs when the component is removed, so the observation ends with the view. Signals need no such step: a property that follows a signal stops following it when its control's owner ends.
+
 ## Verify reactivation
 
 Open and close the view twice, then change the source. An active view should update once; a detached view should not update. If a callback never fires, check whether the guard was dropped at the end of setup. If it fires twice, check whether the prior activation released its observer.
 
-See the [`Subscription` API]({{BASE}}/api/ferroui-system/struct-subscription/), [reactive API]({{BASE}}/api/ferroui-reactive/), and [MVVM activation guide]({{BASE}}/guides/mvvm/).
+See the [`Subscription` API]({{BASE}}/api/ferroui-system/struct-subscription/), [reactive API]({{BASE}}/api/ferroui-reactive/), [`on_cleanup`]({{BASE}}/api/ferroui-view/reactive/function-on_cleanup/), and [MVVM activation guide]({{BASE}}/guides/mvvm/).

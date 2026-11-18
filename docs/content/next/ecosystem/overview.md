@@ -5,14 +5,14 @@ sidebar:
   order: 1
 ---
 
-FerroUI's ecosystem includes reusable packages as well as the core UI framework. Use the crate index to check which packages and features are part of your selected release.
+FerroUI's ecosystem includes reusable packages as well as the core UI framework. The core includes the control set, the five themes, XAML, and the declarative Rust layer (`ferroui-view`), whose features add builders for the TreeDataGrid, the color picker, the dialogs, and the ReactiveUI controls. Use the crate index to check which packages and features are part of your selected release.
 
 | Library family | Use it for | Source example |
 |---|---|---|
 | ReactiveUI and Rx | View models, commands, observable workflows, activation | ReactiveDemo, ReactiveUIExample |
 | DynamicData | Observable collection transformations and change sets | ReactiveUIExample |
 | Dependency injection | Service registration and resolution | Dependency-injection crate tests |
-| TreeDataGrid | Hierarchical or flat tabular data with explicit columns | TreeDataGridDemo |
+| TreeDataGrid | Hierarchical or flat tabular data with explicit columns | TreeDataGridDemo, ViewGallery |
 | Dock | Dockable tool/document workspaces | Dock/FerroDockReactiveUISample |
 | Behaviors and interactions | Attachable XAML interactions and actions | BehaviorsGallery |
 | Charts and LiveCharts | Data visualization | ChartsDemo, LiveChartsDemo |

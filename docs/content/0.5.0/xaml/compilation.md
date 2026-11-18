@@ -5,7 +5,7 @@ sidebar:
   order: 2
 ---
 
-FerroUI supports runtime loading and build-time compilation through the same language front end. Use runtime loading when a document needs to change without rebuilding its Rust owner; use build-time compilation for application assets whose shape is known at build time.
+XAML views are compiled to Rust by the build script of a crate, or loaded at run time; both go through the same language front end. Use build-time compilation for application views whose shape is known at build time: the markup becomes Rust source, bindings are compiled by default, and built-in themes are trimmed to the controls the application uses. Use runtime loading when a document needs to change without rebuilding its Rust owner. A component written in Rust can load a compiled document by its URI with `use_xaml` ([components with XAML]({{BASE}}/declarative/xaml-interop/)).
 
 
 ## Choose a loading path

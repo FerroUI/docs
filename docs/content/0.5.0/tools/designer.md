@@ -3,7 +3,7 @@ title: "Edit XAML with Designer Studio"
 description: "Open a view, edit its layout, preview real controls, and diagnose design-time failures."
 ---
 
-Designer Studio provides a visual workspace for XAML: an artboard, source editor, hierarchy, properties, and native preview. Use it to adjust a view while seeing the same FerroUI controls your application uses.
+Designer Studio provides a visual workspace for XAML views: an artboard, source editor, hierarchy, properties, and native preview. Use it to adjust a view while seeing the same FerroUI controls your application uses. Declarative Rust views are edited in their source instead, with [hot reload of `rsx!` literals]({{BASE}}/declarative/tools/) for quick visual changes.
 
 Designer Studio can run from the matching source checkout. Its package availability varies by release; check the [API index]({{BASE}}/api/) before adding it as a dependency.
 

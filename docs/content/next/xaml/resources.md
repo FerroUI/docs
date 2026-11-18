@@ -19,6 +19,8 @@ Resources give reusable values a key: brushes, styles, templates, dimensions, an
 
 Use static lookup when the resource is stable. Use dynamic lookup when the value is expected to change through theme or resource updates. Keep an application's theme resources at a scope shared by the controls that consume them.
 
+Resources are part of the property system, not of XAML alone. A declarative component reads a resource as the control it is mounted in finds it, and follows changes, with `use_resource(key)` or `use_resource_as::<T>(key)`; see [styles, themes & motion]({{BASE}}/declarative/styling/).
+
 ## Scope and precedence
 
 Resource lookup follows framework resource-provider relationships, not arbitrary Rust module relationships. A resource declared inside one view is not automatically visible to an unrelated window. Check the logical ancestry and application resources when a key resolves in one location but not another.

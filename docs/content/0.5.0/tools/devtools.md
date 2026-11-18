@@ -17,6 +17,10 @@ In Chrome, open `chrome://inspect/#devices`, configure `127.0.0.1:9222` as a net
 
 The CDP endpoint inspects native FerroUI controls. It supports a subset of CDP; browser JavaScript evaluation, DOM scripting, and ordinary Playwright HTML locators are not available.
 
+## Inspect components
+
+For a declarative view, the component inspector of `ferroui-view` shows the mounted components with their keys, runs, and hooks, and for each control where its values come from (a value, following state, two-way, an element, or a binding). An application started with `launch` opens it with **Shift+F12** in a debug build; F12 stays with the developer tools of this page. See [hot reload & inspector]({{BASE}}/declarative/tools/).
+
 ## Diagnose an invisible or incorrectly styled control
 
 1. Find the control in **Elements** and check its bounds and visibility.
@@ -45,5 +49,6 @@ Use CDP sessions for protocol-based inspection or the [MCP integration]({{BASE}}
 ## Public APIs and next steps
 
 - [`DevToolsServer`]({{BASE}}/api/ferroui-devtools/struct-devtoolsserver/) — opt-in application endpoint.
+- [`inspector`]({{BASE}}/api/ferroui-view/inspect/function-inspector/) and [`mounted_trees`]({{BASE}}/api/ferroui-view/inspect/function-mounted_trees/) — the component inspector.
 - [`Control`]({{BASE}}/api/ferroui-controls/struct-control/) and [`FerroObject`]({{BASE}}/api/ferroui-base/struct-ferroobject/) — control and effective property APIs.
 - [Troubleshooting by symptom]({{BASE}}/tools/troubleshooting/), [bindings]({{BASE}}/guides/binding/), and [styles]({{BASE}}/design/themes/).

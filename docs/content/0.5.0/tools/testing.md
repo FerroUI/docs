@@ -5,7 +5,7 @@ sidebar:
   order: 2
 ---
 
-Use several layers of tests, each with a concrete purpose. View-model tests exercise business behavior without a window. Headless tests exercise properties, layout, binding, and input. Rendering tests catch visual regressions. Platform tests cover integration with a real operating system or browser.
+Use several layers of tests, each with a concrete purpose. Model and view-model tests exercise business behavior without a window. Headless tests exercise properties, layout, binding, and input. Rendering tests catch visual regressions. Platform tests cover integration with a real operating system or browser.
 
 
 ## Test time-dependent behavior without sleeping
@@ -38,6 +38,18 @@ cargo test -p reactive-demo
 ```
 
 Read its [view-model tests](https://github.com/wieslawsoltes/FerroUI/tree/{{COMMIT}}/samples/ReactiveDemo/tests) to see substitute services and observable assertions together.
+
+## Test declarative views
+
+Keep the logic of a declarative view in plain Rust beside it, as the 7GUIs samples keep theirs in a model crate without user interface, and test that directly. Then drive the mounted view with the scenario of a user: what is typed and clicked, and what must be shown.
+
+```sh
+cargo test -p seven-guis-tests
+cargo test -p todo-mvc
+cargo test -p reactive-demo-components
+```
+
+`seven-guis-tests` runs one scenario per task on each of the builder, macro, and hook versions. The [TodoMVC tests](https://github.com/wieslawsoltes/FerroUI/blob/{{COMMIT}}/samples/TodoMvc/tests.rs) start the test application of `ferroui-controls` (`UnitTestApplication::start`), create a root `Owner`, mount the application component with a list and a route given as parameters (`app().todos(..).path(..)`, then `element.mount()`), find controls by `Name`, and raise input on them as a user would. Name the controls a test reads (`name: "NewTodo"`), and keep signals the test needs to inspect by creating them under the same owner. `mounted_trees()` and `view_stats()` describe the mounted components and count the work a run did, for tests that check what was kept or patched.
 
 ## Test the state model
 

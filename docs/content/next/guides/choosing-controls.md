@@ -5,7 +5,7 @@ sidebar:
   order: 2
 ---
 
-Choose by the data and interaction you need, then customize appearance through styles and templates.
+Choose by the data and interaction you need, then customize appearance through styles and templates. Every control in the table is available the same way in declarative Rust and in XAML: `button()` or `Button { .. }` in `rsx!`, and `<Button />` in markup, with the same properties; the TreeDataGrid's builders come with the `treedatagrid` feature of `ferroui-view`.
 
 | Task | Start with | Considerations |
 |---|---|---|

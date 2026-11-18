@@ -17,7 +17,7 @@ Open the Countries page to try sorting and filtering, then People to try declara
 
 ## Define a view with columns
 
-This fragment expects a registered `People` collection on the view model and registered `Name` and `Title` properties on each item. It uses runtime bindings to keep the example independent of an application's namespace:
+In XAML, this fragment expects a registered `People` collection on the view model and registered `Name` and `Title` properties on each item. It uses runtime bindings to keep the example independent of an application's namespace:
 
 This fragment uses explicit reflection bindings because it omits your application’s registered source types. See [compiled binding setup]({{BASE}}/xaml/compilation/#migrate-to-compiled-bindings-by-default) for typed XAML.
 
@@ -30,6 +30,17 @@ This fragment uses explicit reflection bindings because it omits your applicatio
 ```
 
 `ItemsSource` supplies records; column bindings read each record. The [People XAML example](https://github.com/wieslawsoltes/FerroUI/blob/{{COMMIT}}/samples/TreeDataGridDemo/Views/PeopleXamlPage.xaml) adds compiled bindings, a child expander, a template column, and check boxes.
+
+## Create the grid from declarative Rust
+
+With the `treedatagrid` feature of `ferroui-view`, the grid and its cells and rows have builders like every other control. A component keeps the source in a hook and gives it to the grid's `source` property; the ViewGallery sample builds a `FlatTreeDataGridSource` with three text columns this way:
+
+```rust
+let source = use_hook(languages); // a function returning a TreeDataGridSourceRef
+rsx! { TreeDataGrid { source: source } }
+```
+
+See the [ViewGallery source](https://github.com/wieslawsoltes/FerroUI/blob/{{COMMIT}}/samples/ViewGallery/lib.rs) for the source and its columns (`cargo run -p view-gallery`).
 
 ## Choose a source model
 

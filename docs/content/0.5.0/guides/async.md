@@ -32,7 +32,38 @@ Expose loading, success, empty, and error states. An empty collection after a su
 
 Search-as-you-type creates overlapping operations. Cancel the older request or ignore its result using a request identity; otherwise an old response can overwrite the newest query's results. Tie cancellation to the view model's activation or component lifetime.
 
-ReactiveUI supplies observable composition and scheduler integration. Declarative components supply asynchronous resources and error boundaries. Choose the mechanism that matches the state model already used by the view.
+ReactiveUI supplies observable composition and scheduler integration. Declarative components supply `use_future`, `suspense`, and error boundaries. Choose the mechanism that matches the state model already used by the view.
+
+## Load data in a component
+
+`use_future(deps, make)` runs a future on the UI thread's dispatcher and restarts it when `deps` change; `suspense` shows its pending, ready, and failed states:
+
+```rust
+#[component(rerender)]
+fn Search() -> Element {
+    let query = use_signal(String::new);
+    let results = use_future(query.get(), |query| {
+        let query = query.clone();
+        async move {
+            sleep(Duration::from_millis(300)).await;
+            search(&query).await
+        }
+    });
+    rsx! {
+        StackPanel {
+            TextBox { text: query.two_way() }
+            {suspense(
+                results,
+                || rsx! { ProgressBar { is_indeterminate: true } },
+                |found| rsx! { TextBlock { text: format!("{} results", found.len()) } },
+                |error| rsx! { TextBlock { text: format!("The search failed: {error}") } },
+            )}
+        }
+    }
+}
+```
+
+`search` is the application's `async fn` returning `Result<_, String>`. The framework does the stale-result work of the steps below for you: a future whose dependencies changed, or whose component was removed, is dropped and never writes its state, and the `sleep` debounces typing. The future runs on the UI thread, so blocking work inside it still freezes the interface; move that work to a worker as described above.
 
 ## Browser constraints
 
@@ -54,6 +85,7 @@ Try a slow first query followed by a fast second query. The first completion mus
 
 ## Public APIs and controls
 
+- [`use_future`]({{BASE}}/api/ferroui-view/async_data/function-use_future/) and [`suspense`]({{BASE}}/api/ferroui-view/async_data/function-suspense/) — asynchronous data in components.
 - [`JoinHandle`]({{BASE}}/api/ferroui-system/task/struct-joinhandle/) and [`CancellationToken`]({{BASE}}/api/ferroui-system/threading/struct-cancellationtoken/) — work and cancellation.
 - [`Dispatcher`]({{BASE}}/api/ferroui-base/threading/struct-dispatcher/) — UI-thread scheduling.
 - [`ReactiveCommand`]({{BASE}}/api/ferroui-reactiveui/reactive_command/struct-reactivecommand/) — operation status and errors.

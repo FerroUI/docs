@@ -5,7 +5,37 @@ sidebar:
   order: 4
 ---
 
-Commands give a view an action and an availability state without putting application logic in a click handler. Buttons bind their `Command` and optional `CommandParameter`; the command's ability to execute can also control whether the button is enabled.
+An action needs a trigger, an availability state, and a place for the application work. In declarative Rust, a handler calls the work directly and a property follows the availability. In XAML and MVVM, commands give a view an action and an availability state without putting application logic in a click handler: buttons bind their `Command` and optional `CommandParameter`, and the command's ability to execute can also control whether the button is enabled.
+
+## Handle a click in declarative Rust
+
+```rust
+use ferroui_view::prelude::*;
+
+#[component]
+pub fn SaveForm() -> Element {
+    let name = signal(String::new());
+    let saved = signal(0);
+    rsx! {
+        StackPanel { spacing: 8.0,
+            TextBox { text: name.two_way(), placeholder_text: "Display name" }
+            Button {
+                is_enabled: move || !name.with(|name| name.trim().is_empty()),
+                on_click: move |_| {
+                    save_profile(&name.get_untracked());
+                    saved.update(|count| *count += 1);
+                },
+                "Save changes"
+            }
+            TextBlock { text: move || format!("Saved {} times", saved.get()) }
+        }
+    }
+}
+```
+
+`save_profile` stands for the application's own function or service call. The button's `IsEnabled` follows the closure, so it is disabled while the name is empty. `get_untracked` reads the name without subscribing the handler. Keep the work itself in an ordinary Rust service that tests can call without a window; keep the handler a thin call into it. For work that completes later, start it from a signal that a `use_future` depends on and show its state with `suspense` ([async data]({{BASE}}/declarative/patterns/)).
+
+## Bind a command in XAML
 
 This fragment uses explicit reflection bindings because it omits your application’s registered source types. See [compiled binding setup]({{BASE}}/xaml/compilation/#migrate-to-compiled-bindings-by-default) for typed XAML.
 
@@ -44,7 +74,7 @@ An asynchronous command should make its running state visible. Disable conflicti
 
 ## Events still have a role
 
-Use a direct event handler for behavior local to a view, such as a focus transition or a temporary pointer interaction. Use a command for an action that should be exercised by tests or more than one UI entry point.
+In an MVVM view, use a direct event handler for behavior local to the view, such as a focus transition or a temporary pointer interaction, and a command for an action that should be exercised by tests or more than one UI entry point. A component's handlers (`on_click`, `on_key_down`, `on_lost_focus`, and the other routed events) play both roles; put the logic they call where tests can reach it.
 
 ## Common failures
 
@@ -52,6 +82,7 @@ If a button is unexpectedly disabled, inspect the command's execution predicate 
 
 ## Public APIs and next steps
 
+- [`signal`]({{BASE}}/api/ferroui-view/reactive/function-signal/) and [`rsx`]({{BASE}}/api/ferroui-view-macros/proc_macro-rsx/) — declarative handlers and availability.
 - [`ReactiveCommand`]({{BASE}}/api/ferroui-reactiveui/reactive_command/struct-reactivecommand/) — creation, execution, and observable status.
 - [`ReactiveCommandAdapter`]({{BASE}}/api/ferroui-reactiveui-controls/struct-reactivecommandadapter/) — connect to [Button]({{BASE}}/controls/reference/button/).
 - [Forms and validation]({{BASE}}/guides/forms/) for Save availability; [async work]({{BASE}}/guides/async/) for long-running operations.

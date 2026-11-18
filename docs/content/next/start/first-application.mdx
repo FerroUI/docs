@@ -1,23 +1,115 @@
 ---
 title: "Your first application"
-description: "Run a complete application, add a view, and connect its first field and action."
+description: "Write a first application as a Rust component with hooks, try the builders and rsx!, then write the same view in XAML."
 sidebar:
   order: 2
 ---
 
-Start from the repository's smallest complete applications. This gives you a working platform entry point, theme, and font setup before you add your own features.
+Start from the repository's smallest complete applications. They give you a working platform entry point, theme, and font setup before you add your own features. The primary way to write a FerroUI interface is declarative Rust with `ferroui-view`; XAML compiled to Rust is the second, equal option, shown at the end of this page.
 
 ## Run a complete example
 
 ```sh
-cargo run -p hello-world
+cargo run -p hello-world-hooks
 ```
 
-The XAML example separates three responsibilities: `program.rs` configures platform detection and starts the desktop lifetime; the application installs resources and a theme; the main window owns its content. Read `samples/HelloWorld` at the commit associated with these docs.
+The window shows a greeting and a button that counts its clicks. The same window is written four more ways in the repository, so you can compare them side by side:
 
-## Add a view
+| Sample | How the view is written |
+| --- | --- |
+| `hello-world-hooks` | A component that runs again, with its state in `use_signal` |
+| `hello-world-builders` | The generated builders (`stack_panel()`, `button()`) and a signal |
+| `hello-world-macros` | `rsx!` and a component that runs once, its text following a signal |
+| `hello-world-component-host` | A component shown inside a XAML window |
+| `hello-world` | XAML compiled to Rust, with an application class |
 
-A view arranges controls. This example creates a labeled text input and a button; it has no dependency on a view model yet.
+Read the sources in [`samples`](https://github.com/wieslawsoltes/FerroUI/tree/{{COMMIT}}/samples) at the commit associated with these docs.
+
+## Write the application in Rust
+
+Create a binary crate and add `ferroui-view` with its `desktop` feature at the same version as any other FerroUI dependency ([installation]({{BASE}}/start/installation/)). This `main.rs` is a complete application:
+
+```rust
+use ferroui_view::prelude::*;
+
+#[component(rerender)]
+fn Counter() -> Element {
+    let count = use_signal(|| 0);
+    rsx! {
+        StackPanel { spacing: 8.0, margin: 16.0,
+            TextBlock { text: format!("Clicked {} times", count.get()) }
+            Button { on_click: move |_| count.update(|c| *c += 1), "Click" }
+        }
+    }
+}
+
+fn main() {
+    ferroui_view::launch(|| rsx! { Window { title: "Counter", width: 320.0, height: 160.0, Counter {} } });
+}
+```
+
+Run it with `cargo run` and click the button. The pieces:
+
+- `rsx!` describes elements: `StackPanel { .. }` is a control, `spacing: 8.0` sets a property, `on_click` attaches a handler, and `"Click"` is the button's content.
+- `#[component(rerender)]` makes `Counter` a component that runs again when a signal it read changes. A reconciler then patches the existing controls; the button and the text block stay the same objects.
+- `use_signal` keeps the count between runs. `count.get()` reads it and subscribes the component; `count.update` changes it.
+- `launch` starts the desktop application with the Fluent theme and makes the `Window` element its main window. `launch_themed` takes another theme, as the hello world samples do with the WinUI 3 theme:
+
+```rust
+fn main() {
+    launch_themed(
+        || ferroui_themes_winui::WinUITheme::new().as_style(),
+        || window().title("Hello, World!").width(400.0).height(240.0).child(rsx! { Counter {} }).into(),
+        |_| {},
+    );
+}
+```
+
+That form needs `ferroui-themes-winui` as a dependency at the same version.
+
+## The same view with the builders
+
+Every control has a builder function and a setter per property and event. `rsx!` expands to these calls, so the two forms mix freely:
+
+```rust
+use ferroui_view::prelude::*;
+
+pub fn counter() -> Element {
+    let count = signal(0);
+    stack_panel()
+        .spacing(8.0)
+        .child(text_block().text(move || format!("Clicked {} times", count.get())))
+        .child(button().content("Click").on_click(move |_| count.update(|c| *c += 1)))
+        .into()
+}
+```
+
+This function runs once. The text property is given a closure, so it follows the signal by itself: a click updates that one property, and nothing else runs. This is the fine-grained model of SolidJS and Leptos; the component above is the model of React. [Builders, rsx! & signals]({{BASE}}/declarative/overview/) compares them.
+
+## Add a field
+
+A two-way value connects an editable property to a signal without a change handler:
+
+```rust
+use ferroui_view::prelude::*;
+
+#[component]
+pub fn Greeting() -> Element {
+    let name = signal(String::new());
+    rsx! {
+        StackPanel { spacing: 8.0, margin: 16.0,
+            TextBox { placeholder_text: "Your name", text: name.two_way() }
+            TextBlock { text: move || format!("Hello, {}!", name.get()) }
+        }
+    }
+}
+```
+
+Typing writes into `name`; the text block follows it. Continue with [components and hooks]({{BASE}}/declarative/components/) for state, effects, context, and lists.
+
+## Write the view in XAML instead
+
+XAML is the other way to write the same view. The build compiles markup to Rust, and the result drives the same controls, themes, and bindings:
 
 ```xml
 <StackPanel xmlns="https://github.com/ferroui"
@@ -28,9 +120,13 @@ A view arranges controls. This example creates a labeled text input and a button
 </StackPanel>
 ```
 
-Set a view model as `DataContext` when the view needs application state. Controls inherit that context through their logical parent, unless you deliberately replace it on a child. [Connect a view model]({{BASE}}/guides/mvvm/).
+The XAML sample separates three responsibilities: `program.rs` configures platform detection and starts the desktop lifetime; the application class installs resources and a theme; the main window owns its content. Run it with `cargo run -p hello-world` and read [`samples/HelloWorld`](https://github.com/wieslawsoltes/FerroUI/tree/{{COMMIT}}/samples/HelloWorld) for the entry point, registration, theme, fonts, and build script that the fragment above omits.
+
+Set a view model as `DataContext` when the view needs application state. Controls inherit that context through their logical parent, unless you deliberately replace it on a child. [Connect a view model]({{BASE}}/guides/mvvm/) and [compile or load XAML]({{BASE}}/xaml/compilation/). A XAML view can host a component and a component can host XAML; see [components with XAML]({{BASE}}/declarative/xaml-interop/).
 
 ## Create controls directly in Rust
+
+Underneath both, controls are framework objects that can also be created and changed imperatively:
 
 ```rust
 use ferroui_controls::{StackPanel, TextBlock};
@@ -45,50 +141,33 @@ panel.set_spacing(12.0);
 panel.children().add(heading);
 ```
 
-A framework object is held in `Ref<T>`, a reference-counted handle with the object model's inheritance and casting behavior. Call `upcast()` when a containing API expects a base control type.
-
-## Prefer declarative composition when it fits
-
-```rust
-use ferroui_view::prelude::*;
-
-pub fn greeting() -> Element {
-    stack_panel()
-        .spacing(12.0)
-        .child(text_block().text("Welcome to FerroUI").font_size(24.0))
-        .child(button().content("Continue"))
-        .into()
-}
-```
-
-For a full application using builders, run `cargo run -p hello-world-builders`. Declarative Rust is provided by the `ferroui-view` crate, which is published with every release since 0.4.0.
+A framework object is held in `Ref<T>`, a reference-counted handle with the object model's inheritance and casting behavior. Call `upcast()` when a containing API expects a base control type. Use this form for infrastructure, custom controls, and integration code.
 
 ## Troubleshoot the first run
 
-A graphics dependency error usually indicates a missing platform toolchain, not an error in your view. A window with invisible controls usually needs a theme or a usable font. A binding that shows nothing requires a data context and correctly registered properties. Start from a known-working sample to isolate each problem.
+A graphics dependency error usually indicates a missing platform toolchain, not an error in your view. A window with invisible controls usually needs a theme or a usable font. A misspelled property in `rsx!` is a compile error that points at the attribute. A binding that shows nothing requires a data context and correctly registered properties. Start from a known-working sample to isolate each problem.
 
 ## Connect the pieces
 
 Use this small progression to keep the first application understandable:
 
 1. Run the unchanged sample and confirm that startup and shutdown work.
-2. Replace only the main view's content with the example above.
-3. Change a label and rebuild to confirm you are editing the loaded document.
-4. Add a model with a name property and [bind the text box]({{BASE}}/guides/binding/).
-5. Give Continue a [command]({{BASE}}/guides/commands/) that reads the name.
-
-The [HelloWorld project](https://github.com/wieslawsoltes/FerroUI/tree/{{COMMIT}}/samples/HelloWorld) supplies the entry point, registration, theme, fonts, and build script omitted from the small view fragments. For a self-contained interactive view, the [playground]({{BASE}}/start/playground/) also offers downloadable example projects.
+2. Replace only the main view's content with one of the examples above.
+3. Change a label and rebuild to confirm you are editing the code that runs.
+4. Keep the name in a signal (or, in XAML, a view-model property) and [bind the text box]({{BASE}}/guides/binding/).
+5. Give Continue a [handler or command]({{BASE}}/guides/commands/) that reads the name.
 
 ## Try the controls
 
 import LiveSample from '@components/LiveSample.astro';
 
-Run this small view, edit its layout, and download its complete desktop project from the example.
+The interactive playground runs XAML in the browser. Run this small view, edit its layout, and download its complete desktop project from the example.
 
 <LiveSample id="stack-panel" />
 
 ## Public APIs and controls
 
-- [`AppBuilder`]({{BASE}}/api/ferroui-controls/struct-appbuilder/) and [`Application`]({{BASE}}/api/ferroui-controls/struct-application/) — startup.
+- [`rsx`]({{BASE}}/api/ferroui-view-macros/proc_macro-rsx/), [`component`]({{BASE}}/api/ferroui-view-macros/proc_macro-component/), and [`Element`]({{BASE}}/api/ferroui-view/element/enum-element/) — declarative composition.
+- [`signal`]({{BASE}}/api/ferroui-view/reactive/function-signal/) and [`use_signal`]({{BASE}}/api/ferroui-view/hooks/function-use_signal/) — state.
+- [`AppBuilder`]({{BASE}}/api/ferroui-controls/struct-appbuilder/) and [`Application`]({{BASE}}/api/ferroui-controls/struct-application/) — the application model behind `launch` and the XAML sample.
 - [StackPanel]({{BASE}}/controls/reference/stackpanel/), [TextBlock]({{BASE}}/controls/reference/textblock/), [TextBox]({{BASE}}/controls/reference/textbox/), and [Button]({{BASE}}/controls/reference/button/) — the view.
-- [`Element`]({{BASE}}/api/ferroui-view/element/enum-element/) — declarative composition.

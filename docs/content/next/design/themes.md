@@ -5,7 +5,9 @@ sidebar:
   order: 2
 ---
 
-A theme supplies the control templates and resources that make controls visible and usable. FerroUI includes Fluent, Simple, WinUI, and additional ecosystem themes. Install a theme before expecting a templated control to have its final appearance.
+A theme supplies the control templates and resources that make controls visible and usable. FerroUI has themes for five design languages, each covering every control with light and dark variants: WinUI 3 (`ferroui-themes-winui`), Fluent (`ferroui-themes-fluent`), Material 3 Expressive (`ferroui-themes-material`), macOS 26 (`ferroui-themes-macos`), and Simple (`ferroui-themes-simple`). Install a theme before expecting a templated control to have its final appearance: a declarative application chooses it in `launch_themed` (`launch` uses Fluent), and an application class adds it to its styles, for example `this.styles().add(FluentTheme::new().as_style())`.
+
+The styling system is the same for declarative Rust and XAML: selectors, styles, control themes, resources, and transitions. The examples below are XAML; [styles, themes & motion]({{BASE}}/declarative/styling/) writes the same styles in Rust with `style("Button.primary").set(..)`.
 
 
 ## Style a class of controls
@@ -22,7 +24,7 @@ A theme supplies the control templates and resources that make controls visible 
 </StackPanel>
 ```
 
-Selectors decide which controls receive setters. Use classes to represent application intent; avoid styling by a transient visual-tree position unless the template contract requires it.
+Selectors decide which controls receive setters. Use classes to represent application intent; avoid styling by a transient visual-tree position unless the template contract requires it. In `rsx!`, the same class is `class: "primary"` and the style is added with `styles: [style("Button.primary").set(..)]`.
 
 ## Check that the selector matches
 
@@ -40,7 +42,7 @@ A control theme packages the styling and template for a control. A template defi
 
 ## Light and dark
 
-Use theme resources instead of literal foreground/background pairs for ordinary controls. Test changing the requested theme variant at runtime. A custom brush that looks acceptable on a light background may erase text or focus feedback in dark mode.
+Use theme resources instead of literal foreground/background pairs for ordinary controls. Test changing the requested theme variant at runtime. A component reads the variant with `use_theme_variant()` and a theme resource with `use_resource_as`, and a `ThemeVariantScope` element switches the variant of a part of the tree. A custom brush that looks acceptable on a light background may erase text or focus feedback in dark mode.
 
 For platform materials such as Mica or native blur, consult the platform guide. A browser-rendered preview is not proof of native material behavior.
 
@@ -57,6 +59,7 @@ For platform materials such as Mica or native blur, consult the platform guide. 
 
 - [`Style`]({{BASE}}/api/ferroui-base/styling/struct-style/), [`Setter`]({{BASE}}/api/ferroui-base/styling/struct-setter/), and [`ThemeVariant`]({{BASE}}/api/ferroui-base/styling/struct-themevariant/) — styles and variants.
 - [`FluentTheme`]({{BASE}}/api/ferroui-themes-fluent/struct-fluenttheme/) — Fluent theme setup.
+- [`style`]({{BASE}}/api/ferroui-view/prelude/style/function-style/) and [`use_theme_variant`]({{BASE}}/api/ferroui-view/hooks/function-use_theme_variant/) — styles and variants from declarative Rust.
 - [Resources]({{BASE}}/xaml/resources/), [custom controls]({{BASE}}/design/custom-controls/), and [accessibility]({{BASE}}/design/accessibility/).
 
 ## Check dynamically loaded controls in a trimmed app

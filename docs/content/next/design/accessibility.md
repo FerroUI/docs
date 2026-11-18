@@ -22,6 +22,20 @@ A placeholder disappears as soon as the user enters text. Use a visible label an
 </StackPanel>
 ```
 
+In declarative Rust, attached properties are written with their owner's name, so the accessible name of the field is `AutomationProperties.name` in `rsx!` (`.automation_properties_name(..)` with the builders):
+
+```rust
+use ferroui_view::prelude::*;
+
+let field = rsx! {
+    StackPanel { spacing: 8.0,
+        TextBlock { text: "Display name" }
+        TextBox { AutomationProperties.name: "Display name", placeholder_text: "For example, Ada" }
+        Button { "Save profile" }
+    }
+};
+```
+
 Tab to the input and check that the platform's screen reader announces “Display name.” The save action should be understandable out of context. For an icon-only action, set `AutomationProperties.Name` to the action, such as “Open settings,” rather than the icon's shape.
 
 ## Use the control's behavior

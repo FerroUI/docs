@@ -30,7 +30,7 @@ Switch tabs with both pointer and keyboard. Move each page into a reusable `User
 
 ## Choose the model
 
-Use a small content host when the application has a few independent views. Use `Frame` and page navigation for a stack/history workflow. Use a NavigationView when the shell needs a top-level navigation structure. Declarative applications can use the router provided by `ferroui-view`.
+Use a small content host when the application has a few independent views. Use `Frame` and page navigation for a stack/history workflow. Use a NavigationView when the shell needs a top-level navigation structure. Declarative applications use the router of `ferroui-view`; MVVM applications use the routing state of ReactiveUI.
 
 A navigation control's selection is not automatically your application's route. Synchronize them deliberately, including back navigation and programmatic changes.
 
@@ -47,6 +47,32 @@ The browser has its own history and URL. If users must bookmark a location, map 
 Cancel obsolete loads, release subscriptions, and stop timers when leaving a view. If views are intentionally cached, distinguish being retained from being active. A cached view should not continue expensive work merely because an object still owns it.
 
 Test forward, back, repeated navigation to the same destination, missing records, and errors during asynchronous page loading.
+
+## Route between components
+
+In declarative Rust, `router(initial, routes)` shows the view of the first matching route and gives the components below a `Router` handle:
+
+```rust
+use ferroui_view::prelude::*;
+
+#[component(rerender)]
+fn Shell() -> Element {
+    let routes = vec![
+        route("/", |_| rsx! { Home {} }),
+        route("/people/:id", |m| rsx! { Person { id: m.param("id").unwrap_or_default().to_string() } }),
+        route("*", |m| rsx! { NotFound { path: m.path().to_string() } }),
+    ];
+    rsx! { Grid { {router("/", routes)} } }
+}
+
+#[component(rerender)]
+fn Home() -> Element {
+    let router = use_router();
+    rsx! { Button { on_click: move |_| router.navigate("/people/42"), "Open person 42" } }
+}
+```
+
+`Home`, `Person`, and `NotFound` are the application's components. The stack holds paths, so a details page receives a record identifier, not a control. `navigate_back`, `navigate_and_reset`, `can_go_back`, and `current` complete the handle; [lists, async data & routing]({{BASE}}/declarative/patterns/) describes the patterns. Another route mounts its view anew and removes the previous view with its state, so state that outlives navigation lives above the router.
 
 ## Connect a routed view model
 
@@ -75,5 +101,6 @@ Switch between the views with pointer and keyboard. This example demonstrates lo
 ## Public APIs and controls
 
 - [TabControl]({{BASE}}/controls/reference/tabcontrol/), [Frame]({{BASE}}/controls/reference/frame/), and [NavigationView]({{BASE}}/controls/reference/navigationview/) — choose a navigation presentation.
+- [`router`]({{BASE}}/api/ferroui-view/router/function-router/), [`route`]({{BASE}}/api/ferroui-view/router/function-route/), and [`use_router`]({{BASE}}/api/ferroui-view/router/function-use_router/) — routed components.
 - [`RoutingState`]({{BASE}}/api/ferroui-reactiveui/routing/struct-routingstate/) and [`RoutedViewHost`]({{BASE}}/api/ferroui-reactiveui-controls/struct-routedviewhost/) — routed MVVM screens.
 - [`ViewModelViewHost`]({{BASE}}/api/ferroui-reactiveui-controls/struct-viewmodelviewhost/) — locate a view for a model without a navigation stack.

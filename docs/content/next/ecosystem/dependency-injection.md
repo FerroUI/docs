@@ -60,7 +60,9 @@ Use asynchronous disposal for async-only resources; synchronous disposal returns
 
 ## Connect to a view model
 
-Resolve the service at the application's composition point and pass it into the model constructor. The view binds the model's state; it does not resolve a service for each binding getter. See [MVVM]({{BASE}}/guides/mvvm/) and [testing]({{BASE}}/tools/testing/).
+Resolve the service at the application's composition point and pass it into the model constructor. The view binds the model's state; it does not resolve a service for each binding getter.
+
+In a declarative application, resolve services at startup in the same way and give them to the root component, either as a parameter or with `provide_context(service)`, which the components below read with `use_context::<T>()` ([components and hooks]({{BASE}}/declarative/components/)). Do not resolve a service on every run of a component; keep the resolved handle in a hook or in the context. See [MVVM]({{BASE}}/guides/mvvm/) and [testing]({{BASE}}/tools/testing/).
 
 When using the `splat` adapter, complete registration before resolving services and install the adapter before ReactiveUI initialization. Changes to that adapter's registrations can replace its built provider; do not use registration changes as a normal UI state mechanism.
 
