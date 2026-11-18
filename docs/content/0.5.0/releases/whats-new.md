@@ -13,7 +13,7 @@ FerroUI 0.5.0 was released on 2026-11-13. This documentation describes that rele
 - **3D scenes.** `Viewport3D` and the Media3D scene model, drawn in Skia and Vello.
 - **Idiomatic Rust signatures.** `...Error` types, `Subscription` guards, futures on the dispatcher with `JoinHandle`, `CancellationToken`, `Duration`, `UriRef`, and cultures based on ICU4X. The former names remain as deprecated aliases until the release after 0.5.
 - **Smaller executables.** Theme trimming and trimmed type tables are on by default, and the `dist` and `release` profiles no longer unwind on panic.
-- **New controls and charts.** WinUI's `PagerControl` and `PersonPicture`, and polar, Sankey, treemap, map, financial, and gauge charts in the LiveCharts port.
+- **New controls and charts.** WinUI's `PagerControl` and `PersonPicture`, and polar, Sankey, treemap, map, financial, and gauge charts in the LiveCharts library.
 
 The release adds 38 crates, among them the Designer Studio and portable media crates. Two experimental native renderers, `ferroui-quartz` on macOS and `ferroui-direct2d` on Windows, are opt-in; Skia remains the default backend.
 

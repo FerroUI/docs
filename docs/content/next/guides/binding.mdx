@@ -5,7 +5,31 @@ sidebar:
   order: 3
 ---
 
-A binding connects a target property to a value on a source object. Most view bindings use the current `DataContext`; the source must expose the properties and notifications FerroUI's binding system expects.
+A control property can follow application state in two ways. In declarative Rust, a property follows a signal, a memo, or a closure directly, and a two-way value writes edits back. In XAML, and from Rust through the property system, a binding connects a target property to a value on a source object, usually the current `DataContext`; the source must expose the properties and notifications FerroUI's binding system expects.
+
+## Follow a signal in declarative Rust
+
+```rust
+use ferroui_view::prelude::*;
+
+#[component]
+pub fn Search() -> Element {
+    let search_text = signal(String::new());
+    rsx! {
+        StackPanel { spacing: 12.0,
+            TextBox { text: search_text.two_way(), placeholder_text: "Search" }
+            TextBlock { text: search_text }
+            TextBlock { text: move || format!("{} characters", search_text.with(|text| text.chars().count())) }
+        }
+    }
+}
+```
+
+Typing writes into `search_text`; both text blocks follow it, and nothing else runs. There is no notification to raise and no name to register: the signal is the source, and the compiler checks the property names and value types. A closure recalculates when the signals it reads change. In a component that runs again, `text: format!(..)` with a value read in the function also works: the component runs and the reconciler sets the new text.
+
+To bind an element to a view model instead, `.bind(property, binding)` sets a binding of the property system on any element, and `use_data_context` reads the data context in a component ([components with XAML]({{BASE}}/declarative/xaml-interop/)).
+
+## Bind to a view model in XAML
 
 ```xml
 <StackPanel xmlns="https://github.com/ferroui" Spacing="12">
@@ -60,6 +84,7 @@ For a model binding, start by setting the property in Rust and confirming the vi
 
 ## Public APIs and controls
 
+- [`signal`]({{BASE}}/api/ferroui-view/reactive/function-signal/), [`Signal`]({{BASE}}/api/ferroui-view/reactive/struct-signal/), and [`TwoWay`]({{BASE}}/api/ferroui-view/reactive/struct-twoway/) — declarative state and two-way values.
 - [`Binding`]({{BASE}}/api/ferroui-markup/data/struct-binding/) and [`BindingMode`]({{BASE}}/api/ferroui-base/data/enum-bindingmode/) — paths and update direction.
 - [`ReactiveObject`]({{BASE}}/api/ferroui-reactiveui/reactive_object/struct-reactiveobject/) — notifying source state.
 - [TextBox]({{BASE}}/controls/reference/textbox/) and [TextBlock]({{BASE}}/controls/reference/textblock/) — the editable and display targets in this guide.

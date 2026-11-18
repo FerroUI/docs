@@ -23,7 +23,7 @@ const body = sanitize(marked.parse(markdown, { async: false }), {
   allowedTags: sanitize.defaults.allowedTags.concat(['details','summary']),
   allowedAttributes: { ...sanitize.defaults.allowedAttributes, a:['href','id','title'], code:['class'], h2:['id'], h3:['id'], span:['class'] },
 });
-const links = [['All topics','topics'],['Start','start/installation'],['Guides','guides/architecture'],['XAML','xaml/overview'],['Controls','controls'],['Design','design/themes'],['Platforms','platforms/desktop'],['Ecosystem','ecosystem/overview'],['API reference','api']];
+const links = [['All topics','topics'],['Start','start/installation'],['Guides','guides/architecture'],['Declarative Rust','declarative/overview'],['XAML','xaml/overview'],['Controls','controls'],['Design','design/themes'],['Platforms','platforms/desktop'],['Ecosystem','ecosystem/overview'],['API reference','api']];
 ---
 <!doctype html>
 <html lang="en" data-theme="light">

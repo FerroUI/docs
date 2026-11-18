@@ -13,11 +13,25 @@ Desktop applications use a classic desktop lifetime. Configure platform detectio
 From the matching source checkout:
 
 ```sh
-cargo run -p hello-world
-cargo build -p hello-world --profile dist
+cargo run -p hello-world-hooks
+cargo build -p hello-world-hooks --profile dist
 ```
 
-The [entry point](https://github.com/wieslawsoltes/FerroUI/blob/{{COMMIT}}/samples/HelloWorld/program.rs) calls `AppBuilder::configure`, selects the platform, and starts the classic desktop lifetime. Keep the application's initialization responsible for its theme and resources, then assign the main window when framework setup completes.
+A declarative application starts with `ferroui_view::launch` (the `desktop` feature of `ferroui-view`): it configures platform detection, installs the Fluent theme, mounts the `Window` element as the main window, and starts the classic desktop lifetime. `launch_themed` takes another theme, and `launch_with` gives you the main window before the main loop runs. Further windows are elements too: `open_window(|| ..)` mounts and shows one, and the tree it mounted ends when the window closes.
+
+```rust
+use ferroui_view::prelude::*;
+
+fn main() {
+    launch_themed(
+        || ferroui_themes_winui::WinUITheme::new().as_style(),
+        || rsx! { Window { title: "Editor", width: 960.0, height: 640.0, Editor {} } },
+        |_| {},
+    );
+}
+```
+
+`Editor` stands for the application's root component. An application written with XAML and an application class uses the same lifetime directly: the [HelloWorld entry point](https://github.com/wieslawsoltes/FerroUI/blob/{{COMMIT}}/samples/HelloWorld/program.rs) (`cargo run -p hello-world`) calls `AppBuilder::configure`, selects the platform, and starts the classic desktop lifetime. Keep the application's initialization responsible for its theme and resources, then assign the main window when framework setup completes.
 
 For a two-window editor, use one shared service/model layer and give each `Window` its own view. Closing an auxiliary window should not accidentally discard shared documents. Choose and test the lifetime's shutdown behavior deliberately.
 
@@ -41,6 +55,7 @@ Exercise startup, shutdown, opening a second window, high DPI, input methods, an
 
 ## Public APIs and controls
 
+- [`rsx`]({{BASE}}/api/ferroui-view-macros/proc_macro-rsx/) and [`component`]({{BASE}}/api/ferroui-view-macros/proc_macro-component/) — the declarative main window and its content.
 - [`AppBuilderDesktopExtensions`]({{BASE}}/api/ferroui-desktop/trait-appbuilderdesktopextensions/) — desktop platform and lifetime entry points.
 - [`Application`]({{BASE}}/api/ferroui-controls/struct-application/) — application initialization.
 - [Window]({{BASE}}/controls/reference/window/), [TopLevel]({{BASE}}/controls/reference/toplevel/), and [UserControl]({{BASE}}/controls/reference/usercontrol/) — hosting and reusable content.

@@ -7,7 +7,7 @@ sidebar:
 
 import LiveSample from '@components/LiveSample.astro';
 
-Edit the markup and see actual FerroUI controls update. The example runtime loads only after you press **Run example**. The Rust support is precompiled; this editor changes XAML, not arbitrary Rust code.
+Edit the markup and see actual FerroUI controls update. The example runtime loads only after you press **Run example**. The playground interprets XAML in the browser with a precompiled runtime; it cannot compile Rust, so declarative Rust views (builders, `rsx!`, components) run from the repository's samples instead: `cargo run -p hello-world-hooks`, `cargo run -p view-gallery`, or `cargo run -p todo-mvc`. The controls you see here are the same ones a component creates.
 
 <LiveSample id="button" />
 
@@ -32,4 +32,4 @@ This runner supplies a theme and supported type registration. A model binding su
 
 - [Button]({{BASE}}/controls/reference/button/) — content, enabled state, commands, and events.
 - [Grid]({{BASE}}/controls/reference/grid/) — columns, rows, and attached layout properties.
-- [XAML syntax]({{BASE}}/xaml/overview/) and [layout]({{BASE}}/design/layout/) explain the edits.
+- [XAML syntax]({{BASE}}/xaml/overview/) and [layout]({{BASE}}/design/layout/) explain the edits; [builders, rsx! & signals]({{BASE}}/declarative/overview/) writes the same views in Rust.

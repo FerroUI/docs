@@ -41,19 +41,36 @@ Suppose each keystroke rebuilds a list of thousands of records:
 
 Use [async work]({{BASE}}/guides/async/) for scheduling and [collections]({{BASE}}/guides/collections/) for incremental updates. Avoid making getters perform disk access or create new commands on each read.
 
+## Choose the update model for values that change often
+
+In a declarative view, how a change reaches the controls decides its cost. The framework's declarative benchmarks (medians of a release build on an M3 Pro, with a list of 1,000 rows and 2,600 components) measured:
+
+| Operation | Time |
+| --- | --- |
+| Mount the list from elements, as a component that runs again | 1.42 ms (1.07 ms for the same controls made directly) |
+| A run of that component with nothing changed | 0.28 ms |
+| One row changed through its signal, in the run-once model | 0.29 µs |
+| A parent that runs again over 2,600 memoized components | 0.23 ms (14.44 ms without memoizing) |
+
+A run costs the component's function and a comparison of its elements; a property that follows a signal costs only that property. Write the structure as components that run again, and pass signals or closures to the properties that change most, such as a progress value or a counter. Keep component parameters comparable (`PartialEq` and `Clone`) so that memoizing applies. The benchmarks run with `FERROUI_BENCH_FILTER=declarative cargo test --release -p ferroui-benchmarks run_benchmarks -- --ignored --nocapture` from the source checkout.
+
 ## Measure the artifact you will ship
 
 Use the application's intended optimized profile when evaluating startup, scrolling, and binary size. For this repository's sample, a distribution build is:
 
 ```sh
 cargo build -p hello-world --profile dist
+cargo build -p hello-world-hooks --profile dist
 ```
+
+Shipped profiles abort instead of unwinding, and an application that compiles its markup links only the theme units its markup and code reach, so compare sizes from the `dist` profile, not from a debug build. The FerroUI repository's [binary size guide](https://github.com/wieslawsoltes/FerroUI/blob/{{COMMIT}}/docs/binary-size.md) explains what an executable is made of and the settings that make it smaller.
 
 Record the framework revision, target, profile, features, hardware, and workload. A change that helps one renderer or platform needs verification on the others you support. Keep benchmark results beside the reproduction rather than treating a framework-wide headline as your application's result.
 
 ## Public APIs and controls
 
 - [`Dispatcher`]({{BASE}}/api/ferroui-base/threading/struct-dispatcher/) — scheduling UI work.
+- [`view_stats`]({{BASE}}/api/ferroui-view/function-view_stats/) — the work of mounting and reconciliation in a declarative view.
 - [`JoinHandle`]({{BASE}}/api/ferroui-system/task/struct-joinhandle/) — asynchronous work and completion.
 - [ListBox]({{BASE}}/controls/reference/listbox/) and [TreeDataGrid]({{BASE}}/controls/reference/treedatagrid/) — collection presentation.
 - [Developer tools]({{BASE}}/tools/devtools/) and [browser hosting]({{BASE}}/platforms/browser/).

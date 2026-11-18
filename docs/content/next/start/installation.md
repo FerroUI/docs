@@ -1,11 +1,11 @@
 ---
 title: "Install FerroUI"
-description: "Set up the platform toolchain, run a known-working sample, and align framework dependencies."
+description: "Set up the platform toolchain, run a known-working sample, and add FerroUI to an application with declarative Rust or XAML views."
 sidebar:
   order: 1
 ---
 
-FerroUI applications are Rust projects. Install the platform toolchain first, then choose XAML or declarative Rust for your views. Both use the same controls, property system, and themes.
+FerroUI is a cross-platform UI framework for Rust. An application is an ordinary Rust project: install the platform toolchain, then write views declaratively in Rust with `ferroui-view` (builders, `rsx!`, signals, and components with hooks) or in XAML compiled to Rust. Both use the same controls, property system, bindings, and themes, and can be mixed in one application.
 
 :::note[You are reading next]
 These pages track development on the FerroUI main branch. This build uses framework version `{{PACKAGE_VERSION}}`; publication is independent of that manifest value. Use the 0.5.0 release for production, and keep every FerroUI dependency at exactly the same version.
@@ -32,14 +32,21 @@ The first graphics build downloads a matching Skia binary, or builds it when no 
 git clone https://github.com/wieslawsoltes/FerroUI.git
 cd FerroUI
 git checkout {{COMMIT}}
-cargo run -p hello-world
+cargo run -p hello-world-hooks
 ```
 
-The checked-out commit matches this documentation build. Run `cargo run -p ferroui --example hello` for the facade example, or explore the ControlCatalog with `cargo run -p control-catalog-desktop`.
+The checked-out commit matches this documentation build. `hello-world-hooks` is Hello, World! as a component with hooks. The same window is also written with the builders (`hello-world-builders`), with `rsx!` and a run-once component (`hello-world-macros`), in XAML (`hello-world`), and as a component hosted in XAML (`hello-world-component-host`). Explore every control with `cargo run -p control-catalog-desktop`.
 
 ## Use this development revision in an app
 
-For an application outside the FerroUI workspace, use the same Git revision for all FerroUI dependencies you add. This facade example selects the revision behind this page:
+For an application outside the FerroUI workspace, use the same Git revision for all FerroUI dependencies you add. For declarative Rust views, `ferroui-view` with its `desktop` feature brings the desktop entry point (`launch`) and the Fluent theme:
+
+```toml
+[dependencies]
+ferroui-view = { git = "https://github.com/wieslawsoltes/FerroUI.git", rev = "{{COMMIT}}", features = ["desktop"] }
+```
+
+For an application that loads XAML at run time, the facade crate with its `xaml` feature selects the same revision:
 
 ```toml
 [dependencies]
@@ -50,9 +57,16 @@ Use a published version instead when you need the release contract.
 
 ## Use a published version
 
-Name a specific published version rather than mixing minor versions. The facade crate `ferroui` re-exports common functionality; its default configuration includes desktop support and the Fluent theme. XAML build output names individual framework crates, so projects compiling markup should use those direct dependencies too.
+Name a specific published version rather than mixing minor versions. For declarative Rust views with the published 0.5.0 release:
 
-For the published 0.5.0 release:
+```toml
+[dependencies]
+ferroui-view = { version = "=0.5.0", features = ["desktop"] }
+```
+
+Add `ferroui-base` at the same version when your code names its types directly, such as `ferroui_base::layout::Orientation`, and a theme crate such as `ferroui-themes-winui` when you choose a theme other than Fluent. The features `xaml`, `treedatagrid`, `color-picker`, `dialogs`, `reactiveui`, and `hot-reload` of `ferroui-view` add XAML inside components, the builders of the other control crates, and hot reload of `rsx!` literals.
+
+An application that compiles XAML or builds its window with the application model names the crates individually:
 
 ```toml
 [dependencies]
@@ -62,24 +76,26 @@ ferroui-desktop = "=0.5.0"
 ferroui-themes-fluent = "=0.5.0"
 ```
 
-An application can instead name the facade alone, for example `ferroui = { version = "=0.5.0", features = ["xaml"] }`. The libraries for MVVM applications, the declarative API, and the developer tools are crates of the same release: add `ferroui-reactiveui-controls`, `ferroui-view`, or `ferroui-diagnostics` at `=0.5.0`, or enable the facade features `reactiveui` and `diagnostics`.
+The facade crate `ferroui` re-exports common functionality; its default configuration includes desktop support and the Fluent theme, for example `ferroui = { version = "=0.5.0", features = ["xaml"] }`. XAML build output names individual framework crates, so projects compiling markup should use those direct dependencies too. The libraries for MVVM applications and the developer tools are crates of the same release: add `ferroui-reactiveui-controls` or `ferroui-diagnostics` at `=0.5.0`, or enable the facade features `reactiveui` and `diagnostics`.
 
 To try unpublished APIs, use the exact source checkout above or the Git revision supplied by a downloadable example. The version picker separates published snapshots from development documentation.
 
 ## Choose your next step
 
-- [Create your first window](../first-application/).
+- [Create your first application]({{BASE}}/start/first-application/) with a component, then the same screen in XAML.
+- [Learn the declarative API]({{BASE}}/declarative/overview/): builders, `rsx!`, and signals.
 - [Understand the application model]({{BASE}}/guides/architecture/).
 - [Build for the browser]({{BASE}}/platforms/browser/).
 
 ## Confirm your setup
 
-A successful `hello-world` run should open a themed window. Close it normally and confirm the process exits. If compilation fails before your application code is reached, resolve the reported toolchain or native dependency first. If the window opens but controls are missing, check theme and font setup.
+A successful `hello-world-hooks` run opens a themed window with a button that counts its clicks. Close it normally and confirm the process exits. If compilation fails before your application code is reached, resolve the reported toolchain or native dependency first. If the window opens but controls are missing, check theme and font setup.
 
 Keep the working checkout as a comparison while creating your application. Follow [Your first application]({{BASE}}/start/first-application/) before introducing services, custom controls, or platform-specific features.
 
 ## Public entry points
 
+- [`rsx`]({{BASE}}/api/ferroui-view-macros/proc_macro-rsx/) and [`component`]({{BASE}}/api/ferroui-view-macros/proc_macro-component/) — declarative views and components.
 - [`AppBuilder`]({{BASE}}/api/ferroui-controls/struct-appbuilder/) — application construction.
 - [`AppBuilderDesktopExtensions`]({{BASE}}/api/ferroui-desktop/trait-appbuilderdesktopextensions/) — desktop platform and lifetime setup.
 - [Window]({{BASE}}/controls/reference/window/) — the desktop host; [UserControl]({{BASE}}/controls/reference/usercontrol/) for shared content.

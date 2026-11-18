@@ -23,7 +23,7 @@ scripts/android/emu-catalog.sh --build --pages 'Home;TextBox;ListBox'
 
 These scripts manage a simulator/emulator run and capture the requested pages. Follow their `--help` output for keeping the device running and selecting output paths. Device signing and store distribution remain separate steps.
 
-For a shared profile view, keep the form in a `UserControl`; each platform host installs that view using its own lifetime. Put saved profile data in a service so a recreated surface can rebuild the form from state.
+For a shared profile view, keep the form in a component or a `UserControl`; each platform host installs that view using its own lifetime. A component is shown there through `ComponentHost::with_view(|| rsx! { ProfileForm {} })`, a control the single-view lifetime can hold. Put saved profile data in a service so a recreated surface can rebuild the form from state.
 
 ## iOS
 

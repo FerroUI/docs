@@ -3,7 +3,9 @@ title: "Build a view model with ReactiveUI"
 description: "Create notifying state, expose it to XAML, connect commands, and manage view lifetimes."
 ---
 
-Use MVVM when several controls display or edit the same application state. The **model** holds domain data, the **view model** exposes state and actions, and the **view** binds controls to them. You can test a view model without opening a window.
+Use MVVM when several views display or edit the same application state, or when views are written in XAML. The **model** holds domain data, the **view model** exposes state and actions, and the **view** binds controls to them. You can test a view model without opening a window. FerroUI's ReactiveUI, DynamicData, and Rx libraries are crates of the release; only their integration with the controls depends on the user interface.
+
+MVVM is one way to structure state. A declarative application can instead keep view state in signals and hooks and call services directly ([components and hooks]({{BASE}}/declarative/components/)), and the two meet in the middle: a component can read a view model from its data context. The ReactiveDemo sample exists in both forms, as a view model with XAML views and as components.
 
 This guide builds the state for a search field. Start with a [working application]({{BASE}}/start/first-application/); keep the ReactiveUI dependencies at the same version as the rest of FerroUI.
 
@@ -84,6 +86,10 @@ Create view bindings inside `when_activated` and add their disposables to the ac
 
 View models and reactive observables use `Rc` and stay on their owning thread. Send plain data to workers, then create or update view models on the UI thread. See [async work]({{BASE}}/guides/async/) before using a background command.
 
+## Use a view model from a component
+
+A component mounted under a view with a data context reads it with `use_data_context::<T>()` and runs again when it changes. For example, a component that receives an `Rc<SearchViewModel>` as its data context can read the model, call its methods from handlers, and show its state. The `reactiveui` feature of `ferroui-view` adds builders for the ReactiveUI controls (`view_model_view_host()`, `routed_view_host()`). See [components with XAML]({{BASE}}/declarative/xaml-interop/).
+
 ## Run the complete application
 
 From the matching source checkout:
@@ -93,11 +99,12 @@ cargo run -p reactive-demo --no-default-features
 cargo test -p reactive-demo
 ```
 
-The sample searches an in-memory catalog in this configuration. Type a query, wait for the debounce, select a result, and inspect the view-model tests. [ReactiveUIExample](https://github.com/wieslawsoltes/FerroUI/tree/{{COMMIT}}/samples/ReactiveUIExample) adds commands, routing, and changing collections.
+The sample searches an in-memory catalog in this configuration. Type a query, wait for the debounce, select a result, and inspect the view-model tests. [ReactiveUIExample](https://github.com/wieslawsoltes/FerroUI/tree/{{COMMIT}}/samples/ReactiveUIExample) adds commands, routing, and changing collections. Compare [ReactiveDemoComponents](https://github.com/wieslawsoltes/FerroUI/tree/{{COMMIT}}/samples/ReactiveDemoComponents) (`cargo run -p reactive-demo-components --no-default-features`), the same crate browser written as components: what the view model computes with `when_any_value` and `to_property` is computed there with hooks and `use_future`.
 
 ## Public APIs and controls
 
 - [`ReactiveObject`]({{BASE}}/api/ferroui-reactiveui/reactive_object/struct-reactiveobject/), [`reactive_properties`]({{BASE}}/api/ferroui-reactiveui/macro-reactive_properties/), and [`reactive_object`]({{BASE}}/api/ferroui-reactiveui/macro-reactive_object/) — state and notifications.
 - [`AppBuilderExtensions`]({{BASE}}/api/ferroui-reactiveui-controls/trait-appbuilderextensions/) — application integration.
+- [`use_data_context`]({{BASE}}/api/ferroui-view/hooks/function-use_data_context/) — a view model read by a component.
 - [`ReactiveCommand`]({{BASE}}/api/ferroui-reactiveui/reactive_command/struct-reactivecommand/) and [`ReactiveCommandAdapter`]({{BASE}}/api/ferroui-reactiveui-controls/struct-reactivecommandadapter/) — actions exposed to controls.
 - [TextBox]({{BASE}}/controls/reference/textbox/), [TextBlock]({{BASE}}/controls/reference/textblock/), and [Button]({{BASE}}/controls/reference/button/) — input, output, and actions.

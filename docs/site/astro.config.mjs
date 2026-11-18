@@ -10,7 +10,7 @@ export default defineConfig({
   integrations: [starlight({
     title: 'FerroUI',
     pagefind: false,
-    description: 'Documentation for FerroUI, a cross-platform UI framework for Rust: guides, XAML and MVVM, controls, and the public Rust API.',
+    description: 'Documentation for FerroUI, a cross-platform UI framework for Rust: declarative Rust UI with signals and React-like components, or compiled XAML; controls, data binding, themes, and the public Rust API.',
     favicon: '/favicon.svg',
     logo: { src: './src/assets/mark.svg', replacesTitle: false },
     social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/wieslawsoltes/FerroUI' }],

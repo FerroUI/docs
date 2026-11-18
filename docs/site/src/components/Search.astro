@@ -3,7 +3,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 <docs-search data-base={base} data-version={process.env.DOCS_VERSION || 'next'}>
   <button type="button" class="search-trigger" aria-label="Search documentation"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><span>Search documentation</span><kbd>⌘ K</kbd></button>
-  <dialog aria-label="Search FerroUI documentation"><div class="search-input-row"><input type="search" placeholder="What would you like to build?" aria-label="Search query" autocomplete="off" /><button type="button" data-close aria-label="Close search">Esc</button></div><div class="search-filters"><label>Search in <select data-section><option value="">Everything</option><option value="guides">Application guides</option><option value="controls">Controls</option><option value="api">API reference</option><option value="xaml">XAML</option><option value="ecosystem">Ecosystem</option><option value="platforms">Platforms</option><option value="tools">Tools</option></select></label><label><input type="checkbox" data-all /> All versions</label></div><p class="search-status" role="status">Search guides, controls, XAML, and Rust APIs.</p><ol class="search-results"></ol></dialog>
+  <dialog aria-label="Search FerroUI documentation"><div class="search-input-row"><input type="search" placeholder="What would you like to build?" aria-label="Search query" autocomplete="off" /><button type="button" data-close aria-label="Close search">Esc</button></div><div class="search-filters"><label>Search in <select data-section><option value="">Everything</option><option value="guides">Application guides</option><option value="controls">Controls</option><option value="api">API reference</option><option value="declarative">Declarative Rust</option><option value="xaml">XAML</option><option value="ecosystem">Ecosystem</option><option value="platforms">Platforms</option><option value="tools">Tools</option></select></label><label><input type="checkbox" data-all /> All versions</label></div><p class="search-status" role="status">Search guides, controls, Rust APIs, and XAML.</p><ol class="search-results"></ol></dialog>
 </docs-search>
 <script>
   class DocsSearch extends HTMLElement {
@@ -37,7 +37,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       const token = ++this.token;
       const status = this.querySelector('.search-status')!;
       const list = this.querySelector('.search-results')!;
-      if (!query.trim()) { list.replaceChildren(); status.textContent = 'Search guides, controls, XAML, and Rust APIs.'; return; }
+      if (!query.trim()) { list.replaceChildren(); status.textContent = 'Search guides, controls, Rust APIs, and XAML.'; return; }
       status.textContent = 'Searching…';
       try {
         if (!this.engine) { this.engine = await import(/* @vite-ignore */ `${this.dataset.base}/pagefind/pagefind.js`); await this.engine.init(); }
@@ -68,7 +68,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
           const words=(title.match(/[a-z0-9]+/g)||[]).map(word=>word.replace(/s$/,''));
           const overlap=terms.filter(term=>words.includes(term)).length*3;
           const exact = title === query.toLowerCase() ? 100 : 0;
-          const taskWeight = task ? ({guides:30,start:30,xaml:30,design:30,controls:20,platforms:15,ecosystem:15,tools:15,declarative:25} as Record<string,number>)[kind] || 0 : 0;
+          const taskWeight = task ? ({guides:30,start:30,xaml:30,design:30,controls:20,platforms:15,ecosystem:15,tools:15,declarative:30} as Record<string,number>)[kind] || 0 : 0;
           return exact + taskWeight + overlap;
         };
         data.sort((a: any,b: any) => score(b)-score(a));

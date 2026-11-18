@@ -16,11 +16,15 @@ Start by identifying which layer owns the behavior: application state, binding, 
 | A list realizes too many rows | Viewport constraints and nested scrolling |
 | Text looks wrong in the browser | Explicit fonts, fallback fonts, rendering mode |
 | Runtime markup cannot find a type | Type registration and XML namespace |
+| A component panics about the order of hooks | A hook called behind a condition or a loop; call every hook on every run |
+| A component is reported as runaway | Its function writes a signal it reads; move the write to a handler or an effect |
+| List items lose their state when reordered | Missing or unstable `key` values; the `MissingKeys` and `DuplicateKey` diagnostics |
+| A value in a component does not update | It was read once (`count.get().to_string()` in a run-once component); pass the signal or a closure |
 | A popup or dialog differs by platform | Hosting, focus, and backend-specific behavior |
 
 ## Inspect before changing
 
-Open developer tools where available and inspect both logical and visual trees. Find the actual control, inspect its resolved values, then look at layout constraints and matched styles. A template part can be visually responsible for a result while the owning control supplies its state.
+Open developer tools where available and inspect both logical and visual trees; for a declarative view, the component inspector (Shift+F12) shows the components, their hooks, and where each control value comes from. Find the actual control, inspect its resolved values, then look at layout constraints and matched styles. A template part can be visually responsible for a result while the owning control supplies its state.
 
 ## Compare against a sample
 

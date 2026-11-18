@@ -27,7 +27,7 @@ Stable corrections rebuild the same framework revision with a new documentation 
 
 ## Make a guide change that stays useful
 
-For a new “search a list” guide, show the required model properties before the XAML that binds to them. Explain the expected result, link to `TextBox` and `ListBox`, and give the likely fix for an empty binding. Use version-relative `{{BASE}}` links in source so the same page works in its release snapshot.
+For a new “search a list” guide, show the declarative version and the XAML version where both apply, and show the required model properties before the XAML that binds to them. Copy Rust examples from the samples or the framework's tests at the documented commit rather than writing new API from memory. Explain the expected result, link to `TextBox` and `ListBox`, and give the likely fix for an empty binding. Use version-relative `{{BASE}}` links in source so the same page works in its release snapshot.
 
 Add the page to `docs/site/src/data/navigation.ts`; the build checks that authored guides are reachable there. Update descriptions so search results explain the task rather than repeat the title. Keep application-facing guidance in the site and implementation design records in their repository documents.
 

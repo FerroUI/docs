@@ -5,7 +5,36 @@ sidebar:
   order: 6
 ---
 
-Use an items control to display a sequence of data, and a data template to describe one item. Avoid manually creating controls for every data object when the collection needs selection, sorting, or virtualization.
+Display a sequence of data either as children that follow a list in your state, or with an items control and a data template that describes one item. Avoid manually creating controls for every data object when the collection needs selection, sorting, or virtualization.
+
+## Render a list in declarative Rust
+
+In a component that runs again, repeat children with `for` and give each a stable key:
+
+```rust
+use ferroui_view::prelude::*;
+
+#[derive(Clone, PartialEq)]
+pub struct SearchResult {
+    pub id: u32,
+    pub name: String,
+}
+
+#[component(rerender)]
+fn Results(results: Vec<SearchResult>) -> Element {
+    rsx! {
+        ListBox {
+            for result in &results {
+                ListBoxItem { key: result.id, content: result.name.clone() }
+            }
+        }
+    }
+}
+```
+
+The items of results that stay keep their controls when the list is filtered or reordered. In a view that runs once, `for_each(move || results.get(), |r: &SearchResult| r.id, |r: SearchResult| ..)` follows a signal of the list instead. For thousands of records, give a virtualizing `ListBox` an `items_source` and `item_template: template(|item: T| ..)`, whose items are components recycled as the list scrolls ([lists, async data & routing]({{BASE}}/declarative/patterns/)).
+
+## Bind a list in XAML
 
 This fragment uses explicit reflection bindings because it omits your application’s registered source types. See [compiled binding setup]({{BASE}}/xaml/compilation/#migrate-to-compiled-bindings-by-default) for typed XAML.
 
@@ -68,6 +97,7 @@ This preview demonstrates selection with static items. The Rust collection examp
 
 ## Public APIs and controls
 
+- [`for_each`]({{BASE}}/api/ferroui-view/prelude/function-for_each/) and [`template`]({{BASE}}/api/ferroui-view/prelude/template/function-template/) — declarative lists and item components.
 - [`ObservableCollection`]({{BASE}}/api/ferroui-system/collections/object_model/struct-observablecollection/) and [`ItemsSource`]({{BASE}}/api/ferroui-controls/struct-itemssource/) — source changes visible to controls.
 - [`SourceCache`]({{BASE}}/api/ferroui-dynamic-data/cache/struct-sourcecache/) — keyed filtering and sorting; see the [DynamicData example](https://github.com/wieslawsoltes/FerroUI/blob/{{COMMIT}}/samples/ReactiveUIExample/ViewModels/dynamic_data_view_model.rs).
 - [ListBox]({{BASE}}/controls/reference/listbox/) — selection and item templates; [TreeDataGrid]({{BASE}}/controls/reference/treedatagrid/) for columns and hierarchy.

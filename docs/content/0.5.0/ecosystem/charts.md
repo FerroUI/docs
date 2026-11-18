@@ -13,7 +13,7 @@ The [LiveCharts sample](https://github.com/wieslawsoltes/FerroUI/tree/{{COMMIT}}
 
 ## Declare the chart
 
-The LiveCharts controls register their XML namespace separately:
+The samples declare charts in XAML. A chart is a control like any other, so a declarative view can also create it in Rust and place it with `Element::Existing`, or load the chart's XAML with `use_xaml` ([components with XAML]({{BASE}}/declarative/xaml-interop/)). In markup, the LiveCharts controls register their XML namespace separately:
 
 ```xml
 <lc:CartesianChart xmlns="https://github.com/ferroui"

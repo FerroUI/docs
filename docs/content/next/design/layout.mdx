@@ -40,6 +40,21 @@ Use Grid for forms and resizable regions. Use StackPanel for a short flow in one
 </Grid>
 ```
 
+The same form in declarative Rust: grid rows and columns take the XAML notation, attached properties use their owner's name, and a tuple or a number converts to a `Thickness`:
+
+```rust
+use ferroui_base::layout::HorizontalAlignment;
+use ferroui_view::prelude::*;
+
+let form = rsx! {
+    Grid { column_definitions: "Auto,*", row_definitions: "Auto,Auto", margin: 24.0,
+        TextBlock { text: "Name", margin: (0.0, 0.0, 12.0, 8.0) }
+        TextBox { Grid.column: 1, placeholder_text: "Display name" }
+        Button { Grid.row: 1, Grid.column: 1, horizontal_alignment: HorizontalAlignment::Left, "Save" }
+    }
+};
+```
+
 ## Constraints and scrolling
 
 A StackPanel can offer effectively unbounded space along its stacking direction. A virtualizing list needs a bounded viewport to know which containers to realize. Put the list in a constrained Grid row instead of an outer scrolling StackPanel.
@@ -74,4 +89,5 @@ Change the column definitions and preview width. Compare the result with the siz
 - [Grid]({{BASE}}/controls/reference/grid/), [StackPanel]({{BASE}}/controls/reference/stackpanel/), [WrapPanel]({{BASE}}/controls/reference/wrappanel/), and [DockPanel]({{BASE}}/controls/reference/dockpanel/) — layout strategies.
 - [ScrollViewer]({{BASE}}/controls/reference/scrollviewer/) and [ListBox]({{BASE}}/controls/reference/listbox/) — scrolling content.
 - [`Control`]({{BASE}}/api/ferroui-controls/struct-control/) — sizing, alignment, and bounds.
+- [`GridDefinitions`]({{BASE}}/api/ferroui-view/prelude/trait-griddefinitions/) — grid rows and columns from declarative Rust.
 - [Developer tools]({{BASE}}/tools/devtools/) — inspect actual constraints and values.

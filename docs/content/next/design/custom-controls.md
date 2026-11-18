@@ -5,12 +5,30 @@ sidebar:
   order: 4
 ---
 
-First decide whether you need a reusable composition or a new behavior contract. A UserControl can package a view. A templated control exposes properties and lets consumers replace its visuals through a template.
-
+First decide whether you need a reusable composition or a new behavior contract. In declarative Rust, a component packages a view; in XAML, a UserControl does. A templated control exposes properties and lets consumers replace its visuals through a template.
 
 ## Start with a reusable composition
 
-A labeled settings group usually needs composition, not new input behavior. This view fragment can become the content of a `UserControl`:
+A labeled settings group usually needs composition, not new input behavior. As a component, its parameters are its properties:
+
+```rust
+use ferroui_view::prelude::*;
+
+#[component]
+pub fn NotificationSettings(email: Signal<bool>, desktop: Signal<bool>) -> Element {
+    rsx! {
+        StackPanel { spacing: 8.0,
+            TextBlock { text: "Notifications", font_size: 20.0 }
+            CheckBox { is_checked: email.two_way(), "Send email updates" }
+            CheckBox { is_checked: desktop.two_way(), "Show desktop notifications" }
+        }
+    }
+}
+```
+
+A component is used like a control (`NotificationSettings { email, desktop }` in `rsx!`, or `notification_settings().email(..)` with its builder), and can be shown inside XAML through a `ComponentHost` ([components with XAML]({{BASE}}/declarative/xaml-interop/)).
+
+In XAML, this view fragment can become the content of a `UserControl`:
 
 ```xml
 <UserControl xmlns="https://github.com/ferroui">
@@ -46,7 +64,8 @@ Use `samples/SampleControls` and existing framework controls as implementation r
 
 ## Public APIs and controls
 
-- [UserControl]({{BASE}}/controls/reference/usercontrol/) — reusable view composition.
+- [`component`]({{BASE}}/api/ferroui-view-macros/proc_macro-component/) — reusable declarative composition.
+- [UserControl]({{BASE}}/controls/reference/usercontrol/) — reusable XAML view composition.
 - [`TemplatedControl`]({{BASE}}/api/ferroui-controls/primitives/struct-templatedcontrol/) — a replaceable visual template.
 - [`StyledProperty`]({{BASE}}/api/ferroui-base/struct-styledproperty/) — a property that participates in styling and binding.
 - [CheckBox]({{BASE}}/controls/reference/checkbox/) — reuse its option and keyboard behavior.

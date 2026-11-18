@@ -3,7 +3,7 @@ description: "Attach reusable view interactions and connect lifecycle events to 
 title: Attach behaviors and actions
 ---
 
-Behaviors package interaction rules that can be attached to existing controls. Use them when a rule belongs to the view and should be reusable across several views.
+Behaviors package interaction rules that can be attached to existing controls in XAML. Use them when a rule belongs to a XAML view and should be reusable across several views. In declarative Rust, the same interactions are usually written directly as handlers (`on_click`, `on_key_down`, `on_loaded`), effects, and components, since the view is already code.
 
 ## Start with a working gallery
 

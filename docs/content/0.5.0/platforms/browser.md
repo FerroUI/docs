@@ -22,6 +22,8 @@ The setup script pins Emscripten, Rust, and wasm-bindgen together. The build scr
 
 The host creates the generated module, attaches it to `FerroExports`, then invokes the application's exported entry point. The application starts a single-view browser lifetime in a named host element. Include fonts explicitly because the renderer cannot assume desktop system-font discovery.
 
+The view of that lifetime is a control, written in XAML or in declarative Rust. A component becomes a control with `ComponentHost::with_view(|| rsx! { App {} })`, which the lifetime can show like any other content; `launch` itself is the desktop entry point. The controls a component creates are the same in the browser as on the desktop.
+
 ## Threads
 
 The default build does not require cross-origin isolation. The optional threaded renderer uses browser workers and requires the appropriate browser capabilities and isolation. GitHub Pages cannot set arbitrary response headers; the catalog has a service-worker-assisted isolation path. Documentation examples use the non-threaded mode to avoid reloading the documentation shell.
