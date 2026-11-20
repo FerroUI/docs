@@ -13,7 +13,7 @@ permissions:
 env:
   DOCS_REQUEST_VERSION: ${{ inputs.version }}
   DOCS_PREFIX: /${{ github.event.repository.name }}
-  DOCS_ORIGIN: ${{ vars.DOCS_ORIGIN || 'https://ferroui.github.io' }}
+  DOCS_ORIGIN: ${{ vars.DOCS_ORIGIN || 'https://ferroui.com' }}
   DOCS_REPOSITORY: ${{ github.repository }}
   PYTHONUTF8: 1
   CARGO_INCREMENTAL: 0
