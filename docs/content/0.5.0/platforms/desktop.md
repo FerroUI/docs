@@ -43,7 +43,7 @@ X11 is the default detected Linux desktop path; Wayland is an explicit choice in
 
 ## Package deliberately
 
-Build with the repository's distribution profile when measuring shipped artifacts. Bundle fonts and application resources under stable asset identities. Native library requirements depend on the selected platform and renderer; test the packaged application on a clean machine rather than only from the development checkout.
+Ship with the `dist` profile, and define it in your own application: Cargo does not take profiles from a dependency. See [Build profiles]({{BASE}}/tools/build-profiles/). Bundle fonts and application resources under stable asset identities. Native library requirements depend on the selected platform and renderer; test the packaged application on a clean machine rather than only from the development checkout.
 
 ## Native integrations
 

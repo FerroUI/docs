@@ -56,7 +56,7 @@ A run costs the component's function and a comparison of its elements; a propert
 
 ## Measure the artifact you will ship
 
-Use the application's intended optimized profile when evaluating startup, scrolling, and binary size. For this repository's sample, a distribution build is:
+Use the application's intended optimized profile when evaluating startup, scrolling, and binary size. [Build profiles]({{BASE}}/tools/build-profiles/) explains which one to use and how to add it to your application. For this repository's sample, a distribution build is:
 
 ```sh
 cargo build -p hello-world --profile dist
