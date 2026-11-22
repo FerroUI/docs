@@ -19,7 +19,7 @@ Use `dist` for the executable you ship. Use `release` for everyday optimized bui
 
 Cargo reads `[profile.*]` sections only from the root manifest of the workspace it builds. An application that depends on FerroUI from crates.io, from git, or through a path does **not** inherit FerroUI's profiles, and without its own settings `cargo build --release` uses Cargo's defaults: no link-time optimization, with unwinding.
 
-- **Single-crate templates** (`app`, `app-codebehind`, `declarative`, `rsx`) include these profiles.
+- **Single-crate [project templates]({{BASE}}/start/templates/)** (`app`, `app-codebehind`, `declarative`, `rsx`) include these profiles.
 - **The `cross-platform` template** gets them when you run `scripts/setup.sh`. After you update the FerroUI submodule, run `python3 FerroUI/scripts/apps/sync-workspace.py` to bring them up to date.
 - **Any other application** adds them to its root `Cargo.toml`:
 
