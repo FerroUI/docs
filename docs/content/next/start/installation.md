@@ -82,6 +82,7 @@ To try unpublished APIs, use the exact source checkout above or the Git revision
 
 ## Choose your next step
 
+- [Create a project from a template]({{BASE}}/start/templates/), the quickest way to start your own application.
 - [Create your first application]({{BASE}}/start/first-application/) with a component, then the same screen in XAML.
 - [Learn the declarative API]({{BASE}}/declarative/overview/): builders, `rsx!`, and signals.
 - [Understand the application model]({{BASE}}/guides/architecture/).
