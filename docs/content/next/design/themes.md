@@ -46,6 +46,12 @@ Use theme resources instead of literal foreground/background pairs for ordinary 
 
 For platform materials such as Mica or native blur, consult the platform guide. A browser-rendered preview is not proof of native material behavior.
 
+## Use typed resource keys in Rust
+
+Each theme crate has a `keys` module with a constant per resource key and the type of its value. `.dynamic_resource(property, keys::Name)` follows the resource through a change of theme variant, `.static_resource(..)` takes its first value, and `use_theme_resource(keys::Name)` reads it in a component. A wrong key or value type does not compile. See [declarative styling]({{BASE}}/declarative/styling/).
+
+Theme trimming reads a typed key exactly, as what follows `keys::` in a path, an import, or a macro. Importing `keys::*` or renaming the module hides which keys you use, so every capitalized name in the crate may then keep a key. Use text keys for a key that comes from data, and list it in `theme-roots` if no literal names it.
+
 ## Choose the smallest appearance change
 
 | Desired change | Start with |

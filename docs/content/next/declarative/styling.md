@@ -33,10 +33,10 @@ use ferroui_view::prelude::*;
 let panel = rsx! {
     StackPanel { spacing: 12.0,
         styles: [
-            style("Button.accent")
-                .set(TemplatedControl::background_property(), "#0063B1")
+            style(of::<Button>().class("accent"))
+                .set(TemplatedControl::background_property(), rgb(0x0063B1))
                 .set(TemplatedControl::foreground_property(), "White")
-                .nested(style("^:pointerover").set(Visual::opacity_property(), 0.85)),
+                .nested(style(nesting().pointer_over()).set(Visual::opacity_property(), 0.85)),
         ],
         Button { class: "accent", "Save" }
         Button { "Cancel" }
@@ -44,7 +44,28 @@ let panel = rsx! {
 };
 ```
 
-`style(selector)` parses a selector in XAML syntax, resolving type names among the registered classes; `style_of` takes a selector built with the selectors API. `.set(property, value)` converts the value as element setters do. A nested style's selector starts with `^`, the selector of the style it is in. `styles: [..]` (`.styles([..])` with the builders) adds the styles to the control's `Styles` when it is made. Use classes for application intent, as in XAML.
+`style(..)` takes a typed selector or text. A misspelled class or pseudo-class in a typed selector does not compile, and an application that uses only typed selectors links no selector parser. `.set(property, value)` converts the value as a setter of an element does, and `.nested(..)` adds a style that starts from the selector of this one.
+
+| Text | Typed |
+| --- | --- |
+| `Button` | `of::<Button>()` |
+| `:is(Control)` | `is_type::<Control>()` |
+| `.accent` | `any().class("accent")` |
+| `#title` | `any().name("title")` |
+| `:pressed` | `any().pressed()` |
+| `Button.accent:focus` | `of::<Button>().class("accent").focus()` |
+| `StackPanel > TextBlock` | `of::<StackPanel>().child().of::<TextBlock>()` |
+| `StackPanel TextBlock` | `of::<StackPanel>().descendant().of::<TextBlock>()` |
+| `Button /template/ ContentPresenter` | `of::<Button>().template().of::<ContentPresenter>()` |
+| `Button:not(.accent)` | `of::<Button>().not(any().class("accent"))` |
+| `:nth-child(2n+1)` | `any().nth_child(2, 1)` |
+| `Button[IsEnabled=False]` | `of::<Button>().property_equals(InputElement::is_enabled_property(), false)` |
+| `Button, TextBlock` | `any_of([of::<Button>(), of::<TextBlock>()])` |
+| `^:pointerover` | `nesting().pointer_over()` |
+
+Every pseudo-class that a framework control declares is a method. A pseudo-class of your own control is written `.class(":name")`. To start several selectors from one prefix, use the pseudo-class methods or `.with_class(..)`: `.class(..)` extends the selector it is called on, so a clone of that selector gets the class too.
+
+Text is the better form for a selector that comes from data or is copied from XAML. A type name in text that is not registered is matched by name, so a misspelled one never applies.
 
 ## Follow the theme variant and resources
 
@@ -85,6 +106,44 @@ fn Page(dark: Signal<bool>) -> Element {
 
 The components below the scope read the new variant and resources and run again when they change.
 
+## Follow a resource without running again
+
+Each theme crate has a `keys` module: a constant per key of its dictionaries, with the type of its value. A builder can follow a key directly, so a change of the theme variant reaches the property with no component running again:
+
+```rust
+use ferroui_controls::Border;
+use ferroui_themes_fluent::keys;
+use ferroui_view::prelude::*;
+
+let card = border()
+    .dynamic_resource(Border::background_property(), keys::SystemControlBackgroundAltHighBrush)
+    .static_resource(Border::corner_radius_property(), keys::ControlCornerRadius);
+```
+
+- `dynamic_resource` is `{DynamicResource}` and `static_resource` is `{StaticResource}`. Both also take the text of a key.
+- A key that does not exist does not compile, and neither does a key whose value does not convert to the property. A color key on a brush property becomes a brush.
+- `use_theme_resource(keys::Name)` reads a typed key in a component, which then runs again when it changes.
+- A key with no single value type (a converter, a template, a geometry) is checked as a key only. Use it through its text, `keys::Name.name()`.
+- Typed keys are exact roots of [theme trimming]({{BASE}}/design/themes/). Avoid `use keys::*`, which hides which keys the application names.
+
+Text keys are the right form for a key from data or from a dictionary of your own.
+
+## Write a control theme or a dictionary in Rust
+
+`control_theme::<T>()` and `resource_dictionary()` make the same objects as compiled XAML. See [custom controls]({{BASE}}/design/custom-controls/) for a templated control with its whole theme in Rust.
+
+```rust
+use ferroui_base::styling::ThemeVariant;
+use ferroui_base::Thickness;
+use ferroui_view::prelude::*;
+
+let resources = resource_dictionary()
+    .value("CardPadding", Thickness::uniform(12.0))
+    .theme_variant(ThemeVariant::light(), resource_dictionary().value("Accent", rgb(0x0063B1)))
+    .theme_variant(ThemeVariant::dark(), resource_dictionary().value("Accent", rgb(0x60CDFF)))
+    .build();
+```
+
 ## Add transitions and animations
 
 | Function | Gives |
@@ -106,7 +165,7 @@ fn Bar() -> Element {
     rsx! {
         StackPanel { spacing: 8.0,
             Button { on_click: move |_| wide.update(|wide| *wide = !*wide), "Animate" }
-            Border { height: 12.0, corner_radius: 6.0, background: "#0063B1",
+            Border { height: 12.0, corner_radius: 6.0, background: rgb(0x0063B1),
                 horizontal_alignment: HorizontalAlignment::Left,
                 width: if wide.get() { 480.0 } else { 120.0 }, transitions: bar_transitions }
         }

@@ -90,6 +90,10 @@ View models and reactive observables use `Rc` and stay on their owning thread. S
 
 A component mounted under a view with a data context reads it with `use_data_context::<T>()` and runs again when it changes. For example, a component that receives an `Rc<SearchViewModel>` as its data context can read the model, call its methods from handlers, and show its state. The `reactiveui` feature of `ferroui-view` adds builders for the ReactiveUI controls (`view_model_view_host()`, `routed_view_host()`). See [components with XAML]({{BASE}}/declarative/xaml-interop/).
 
+## Bind a view model from builders
+
+For a view model used from Rust views, `#[derive(ViewModel)]` declares each property once, and `Person::NAME.two_way()` binds it with no path text. See [typed bindings]({{BASE}}/guides/binding/). A ReactiveUI view model keeps its own setters and binds with `ModelProperty::with_raised_name`, whose name the compiler cannot check.
+
 ## Run the complete application
 
 From the matching source checkout:

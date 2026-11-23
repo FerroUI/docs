@@ -47,13 +47,15 @@ use ferroui_base::layout::HorizontalAlignment;
 use ferroui_view::prelude::*;
 
 let form = rsx! {
-    Grid { column_definitions: "Auto,*", row_definitions: "Auto,Auto", margin: 24.0,
+    Grid { column_definitions: [auto(), star(1.0)], row_definitions: [auto(), auto()], margin: 24.0,
         TextBlock { text: "Name", margin: (0.0, 0.0, 12.0, 8.0) }
         TextBox { Grid.column: 1, placeholder_text: "Display name" }
         Button { Grid.row: 1, Grid.column: 1, horizontal_alignment: HorizontalAlignment::Left, "Save" }
     }
 };
 ```
+
+In Rust, Grid lengths are `auto()`, `star(weight)`, and `px(size)`. When the count and kinds stay the same, new lengths update the existing definitions in place. To follow state, use `.set(GridDefinitionSizes::columns_property(), move || [star(left.get()), star(right.get())])`. The text form (`"Auto,*,40"`) still works and suits definitions that come from data.
 
 ## Constraints and scrolling
 

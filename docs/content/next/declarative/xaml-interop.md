@@ -95,6 +95,28 @@ rsx! { Border { {Element::Existing(details)} } }
 
 `Element::Existing` places a control that already exists, such as a XAML user control or a control the application keeps, in the element tree. To compile a document that a component loads by URI, the crate compiles its markup in its build script and registers the compiled loader table; the sample's [`register_types.rs`](https://github.com/wieslawsoltes/FerroUI/blob/{{COMMIT}}/samples/ViewInterop/register_types.rs) shows the registration, and the generated code creates `ComponentHost` directly. See [compile or load XAML]({{BASE}}/xaml/compilation/).
 
+## Map XAML to builders
+
+| XAML | Builder |
+| --- | --- |
+| `<Style Selector="Button.accent:pressed">` | `style(of::<Button>().class("accent").pressed())` |
+| `RowDefinitions="Auto,*,40"` | `.row_definitions([auto(), star(1.0), px(40.0)])` |
+| `Background="#1E293B"` | `.background(rgb(0x1E293B))` |
+| `Data="M0 0L10 10z"` | `.data(path!("M0 0L10 10z"))` |
+| `HotKey="Ctrl+S"` | `.hot_key(ctrl(KeyCode::S))` |
+| `RenderTransform="translate(10px, 5px)"` | `.render_transform(translate(10.0, 5.0))` |
+| `BoxShadow="0 2 4 Black"` | `.box_shadow(shadow(0.0, 2.0, 4.0, Colors::BLACK))` |
+| `Effect="blur(5)"` | `.effect(blur(5.0))` |
+| `{DynamicResource Key}` | `.dynamic_resource(property, keys::Key)` |
+| `{StaticResource Key}` | `.static_resource(property, keys::Key)` |
+| `{Binding Name}` on a view model | `.text(Person::NAME.one_way())` |
+| `{Binding Name, Mode=TwoWay}` | `.text(Person::NAME.two_way())` |
+| `{TemplateBinding Background}` | `.template_bind(Border::background_property(), TemplatedControl::background_property())` |
+| `<ControlTheme TargetType="X">` | `control_theme::<X>()` |
+| `<ResourceDictionary>` | `resource_dictionary()` |
+
+XAML remains the better form for a theme that designers edit or that you hot reload. The two mix freely: a builder can use a theme written in XAML, and XAML can host a component.
+
 ## Keep one owner per subtree
 
 The reconciler owns the controls it mounted. Do not add or remove children of those controls from XAML code or other Rust code; place foreign content through `Element::Existing`, `use_xaml`, or a `ComponentHost`. Inside a XAML document, the component under a `ComponentHost` belongs to the host, and its lifetime follows the host's attachment.

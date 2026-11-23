@@ -71,6 +71,29 @@ Keep expensive work out of component bodies. Use `use_future` with `suspense` ([
 
 React features that are not part of FerroUI: concurrent rendering and transitions (rendering is synchronous by design), `Suspense` that waits for the data of several components or streams, and server components or server rendering.
 
+## Use typed values in rsx
+
+`rsx!` takes the typed forms wherever it takes an expression, so a misspelled selector, key, or path is a compile error rather than a style that never applies:
+
+```rust
+use ferroui_base::Visual;
+use ferroui_controls::Border as BorderClass;
+use ferroui_themes_fluent::keys;
+use ferroui_view::prelude::*;
+
+let view = rsx! {
+    Grid { row_definitions: [auto(), star(1.0)],
+        styles: [style(of::<Button>().class("accent")).set(Visual::opacity_property(), 0.9)],
+        Border { dynamic_resource(BorderClass::background_property(), keys::SystemControlBackgroundAltHighBrush),
+            box_shadow: shadow(0.0, 2.0, 4.0, argb(0x40000000)),
+            Button { class: "accent", hot_key: ctrl(KeyCode::S), "Save" }
+        }
+    }
+};
+```
+
+Unlike CSS strings in React, these are Rust values. Text forms still work for values that come from data.
+
 ## Try a larger example
 
 Compare the [SevenGuis Hooks examples](https://github.com/wieslawsoltes/FerroUI/tree/{{COMMIT}}/samples/SevenGuis/Hooks) with their Builders and Macros counterparts, then read [TodoMVC](https://github.com/wieslawsoltes/FerroUI/tree/{{COMMIT}}/samples/TodoMvc) (`cargo run -p todo-mvc`), written as components with hooks and a router. In a list, edit an item and reorder the rows: a stable record key should keep state with the record. An array index is unsuitable when positions can change.

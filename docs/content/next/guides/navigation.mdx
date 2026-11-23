@@ -74,6 +74,38 @@ fn Home() -> Element {
 
 `Home`, `Person`, and `NotFound` are the application's components. The stack holds paths, so a details page receives a record identifier, not a control. `navigate_back`, `navigate_and_reset`, `can_go_back`, and `current` complete the handle; [lists, async data & routing]({{BASE}}/declarative/patterns/) describes the patterns. Another route mounts its view anew and removes the previous view with its state, so state that outlives navigation lives above the router.
 
+### Use typed routes
+
+A route can be a Rust type that declares its pattern, with its parameters as fields:
+
+```rust
+use ferroui_view::prelude::*;
+
+#[derive(Route)]
+#[route("/people/:id")]
+struct PersonRoute {
+    id: u32,
+}
+
+fn routes() -> Vec<RouteDef> {
+    vec![
+        route("/", |_| text_block().text("Home").into()),
+        typed_route::<PersonRoute>(|person| text_block().text(format!("Person {}", person.id)).into()),
+        route("*", |m| text_block().text(format!("Nothing at {}", m.path())).into()),
+    ]
+}
+
+#[component(rerender)]
+fn Open() -> Element {
+    let router = use_router();
+    rsx! { Button { on_click: move |_| router.navigate_to(&PersonRoute { id: 42 }), "Open person 42" } }
+}
+```
+
+A parameter with no field, a field with no parameter, or a value type without `FromStr` and `Display` does not compile. Paths stay the entries of the stack, so typed and text routes share a router and a deep link is an ordinary path. A deep link whose value does not parse (`/people/abc`) does not match the typed route: the router goes on to the next route, usually the last `route("*", ..)`.
+
+Text routes are the form for a pattern that is not known when the crate compiles.
+
 ## Connect a routed view model
 
 ReactiveUI applications can let a screen own `RoutingState` and host its current page with this view fragment:
