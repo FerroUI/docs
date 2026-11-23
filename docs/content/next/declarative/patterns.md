@@ -142,6 +142,40 @@ router("/", vec![
 
 The router is in-application navigation. In the browser, map routes to the page URL explicitly if users need bookmarks; see [navigation]({{BASE}}/guides/navigation/).
 
+## Write values with typed forms
+
+Setters take short typed values, which the compiler checks and which link no parser:
+
+```rust
+use ferroui_base::media::Colors;
+use ferroui_view::prelude::*;
+
+let card = border()
+    .background(linear_gradient(&[(0.0, rgb(0x0063B1)), (1.0, rgb(0x60CDFF))]).horizontal())
+    .box_shadow(shadow(0.0, 2.0, 4.0, argb(0x40000000)))
+    .render_transform(translate(10.0, 5.0).rotate(45.0))
+    .effect(blur(2.0));
+let save = button().hot_key(ctrl(KeyCode::S)).content("Save");
+let icon = path().data(path!("M8 3v5H3v2h5v5h2V10h5V8h-5V3z")).fill(Colors::BLACK);
+```
+
+| Value | Typed forms |
+| --- | --- |
+| Key gesture | `ctrl`, `shift`, `alt`, `meta`, chained: `ctrl(KeyCode::S).shift()` |
+| Transform | `translate`, `rotate` (degrees), `scale`, `skew`, chained, and `.matrix(..)` |
+| Box shadow | `shadow(x, y, blur, color)`, `.spread(..)`, `.inset()`; an array gives several |
+| Effect | `blur(radius)`, `drop_shadow(x, y, radius, color)` |
+| Brush | `rgb(0x1E293B)`, `argb(0x801E293B)`, `linear_gradient(&[..])` |
+| Path | `path!("M...")`, checked when the crate compiles; `path_data()` with `move_to`, `line_to`, `quad_to`, `cubic_to`, `arc_to`, `close` for a path computed from values |
+
+The keyboard key is `KeyCode` in the prelude, because `Key` there is the key of an element among its siblings. Elements that name one color or one gradient share one brush, and elements that name one `path!` share one geometry.
+
+Text stays the better form for a value that comes from data, such as a color from a settings file or a path from a document: `Color::parse`, `Geometry::parse`, `KeyGesture::parse`.
+
+## Use typed routes
+
+A route can be a type whose fields are its parameters. See [navigation]({{BASE}}/guides/navigation/).
+
 ## Run the samples
 
 ```sh

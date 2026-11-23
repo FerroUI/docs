@@ -56,6 +56,51 @@ Release template-part subscriptions when a template is replaced. Avoid retaining
 
 Call the relevant base implementation when overriding framework behavior unless the contract explicitly requires replacement. Keep UI-thread restrictions consistent with the rest of the control system.
 
+## Write the theme in Rust
+
+A templated control can have its whole theme in Rust, with no XAML. The builders make the same `ControlTheme`, setters, and template parts as compiled XAML:
+
+```rust
+use ferroui_base::styling::ControlTheme;
+use ferroui_base::Ref;
+use ferroui_controls::presenters::ContentPresenter;
+use ferroui_controls::primitives::{TemplatedControl, ToggleButton};
+use ferroui_controls::{Border, ContentControl};
+use ferroui_themes_fluent::keys;
+use ferroui_view::prelude::*;
+
+fn chip_theme() -> Ref<ControlTheme> {
+    control_theme::<ToggleButton>()
+        .set(TemplatedControl::padding_property(), (12.0, 4.0))
+        .dynamic_resource(TemplatedControl::background_property(), keys::SystemControlBackgroundAltHighBrush)
+        .template(|| {
+            border()
+                .name("PART_Border")
+                .template_bind(Border::background_property(), TemplatedControl::background_property())
+                .child(
+                    content_presenter()
+                        .name("PART_ContentPresenter")
+                        .template_bind(ContentPresenter::content_property(), ContentControl::content_property())
+                        .template_bind(ContentPresenter::padding_property(), TemplatedControl::padding_property()),
+                )
+                .into_element()
+        })
+        .nested(
+            style(nesting().checked().template().of::<Border>())
+                .dynamic_resource(Border::background_property(), keys::SystemControlHighlightAccentBrush),
+        )
+        .build()
+}
+```
+
+Give it to one control with `.theme(chip_theme())`, or to every control of the class with `resource_dictionary().control_theme(chip_theme())`.
+
+- A template body is a plain function, so a closure that captures nothing adds no generic code. Use `control_template_with` for a template that must capture.
+- Elements with a name are template parts, found through the name scope in `on_apply_template`.
+- Values and bindings in a template have template priority, so a style with a condition overrides them, as in XAML. A signal or closure on a template element stays a local value, which such a style does not override.
+
+Write the theme in XAML when designers edit it or when you want hot reload.
+
 ## Test behavior and presentation
 
 Test default properties, notification, input behavior, retemplating, resource changes, and disposal. Use headless tests for deterministic control behavior and rendering tests for visuals that matter to the contract.

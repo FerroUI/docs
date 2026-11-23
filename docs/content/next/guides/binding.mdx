@@ -29,6 +29,44 @@ Typing writes into `search_text`; both text blocks follow it, and nothing else r
 
 To bind an element to a view model instead, `.bind(property, binding)` sets a binding of the property system on any element, and `use_data_context` reads the data context in a component ([components with XAML]({{BASE}}/declarative/xaml-interop/)).
 
+## Bind to a view model with typed properties
+
+Declare the view model once, and the accessors, the change notification, and the typed property cannot disagree:
+
+```rust
+use ferroui_base::data::model::Event;
+use ferroui_base::BoxedValue;
+use ferroui_view::prelude::*;
+use std::cell::RefCell;
+use std::rc::Rc;
+
+#[derive(ViewModel)]
+#[computed(greeting: String, depends_on(name))]
+struct Person {
+    #[property]
+    name: RefCell<String>,
+    property_changed: Event<str>,
+}
+
+impl Person {
+    fn greeting(&self) -> String {
+        format!("Hello, {}", self.name())
+    }
+}
+
+fn form(person: Rc<Person>) -> Element {
+    stack_panel()
+        .data_context(person as BoxedValue)
+        .child(text_box().text(Person::NAME.two_way()))
+        .child(text_block().text(Person::GREETING.one_way()))
+        .into()
+}
+```
+
+A misspelled property, a value of another type, or a two-way binding of a read-only property does not compile. The binding is a compiled binding with no reflection and no path text. List every property a computed getter reads in `depends_on`: the compiler checks that each exists, but not that the list is complete.
+
+A model that already has its own setters uses `ModelProperty::with_raised_name("Title", Model::title, Model::set_title)`. Its accessors are checked and **its name is not**: a name that differs from what the model raises compiles, shows the first value, and then does not update. Use a `Binding` with a path when the path crosses several objects or needs a converter.
+
 ## Bind to a view model in XAML
 
 ```xml

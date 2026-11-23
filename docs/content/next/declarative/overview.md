@@ -45,9 +45,27 @@ For every control class there is a function that starts its element (`button()`,
 | `bind(property, binding)` | A binding of the property system on the data context |
 | `on(event, handler)`, `on_changed(property, handler)` | Any routed event; the new value of a property whenever it changes |
 | `with(\|control\| ..)`, `node_ref(r)` | The control once it is made; keep it in a `NodeRef` |
-| `row_definitions("Auto,*")`, `column_definitions(..)` | Grid rows and columns, written as XAML writes them |
+| `row_definitions([auto(), star(1.0)])`, `column_definitions(..)` | Grid rows and columns, as typed lengths or as the text XAML takes (`"Auto,*"`) |
 
 Setters convert their argument: numbers to `f64` and to text, `f64` and tuples to `Thickness` (`margin: (0.0, 8.0, 0.0, 0.0)`), `f64` to `CornerRadius`, and a `Color`, a color name, or `#rgb` text to a brush. A property that holds an object (`content`, `header`) also takes an element. The builders are generated from the controls' sources, so they cover the whole control set, and the TreeDataGrid, the color picker, the dialogs, and the ReactiveUI controls behind features.
+
+## Prefer the typed form
+
+What has a text form in XAML also has a typed form in the builders. The compiler checks the typed form, and it links no parser. Use text when the value comes from data at run time or is copied from XAML.
+
+| What | Typed | Text | Guide |
+| --- | --- | --- | --- |
+| Style selector | `style(of::<Button>().class("accent").pressed())` | `style("Button.accent:pressed")` | [Styling]({{BASE}}/declarative/styling/) |
+| Grid rows and columns | `row_definitions([auto(), star(1.0), px(40.0)])` | `row_definitions("Auto,*,40")` | [Layout]({{BASE}}/design/layout/) |
+| Path geometry | `path!("M0 0L10 10z")`, `path_data()` | `Geometry::parse(..)` | [Patterns]({{BASE}}/declarative/patterns/) |
+| Key gesture | `ctrl(KeyCode::S).shift()` | `KeyGesture::parse("Ctrl+Shift+S")` | [Patterns]({{BASE}}/declarative/patterns/) |
+| Transform | `translate(10.0, 5.0).rotate(45.0)` | `TransformOperations::parse(..)` | [Patterns]({{BASE}}/declarative/patterns/) |
+| Shadow, effect | `shadow(0.0, 2.0, 4.0, color)`, `blur(5.0)` | `BoxShadows::parse(..)`, `Effect::parse(..)` | [Patterns]({{BASE}}/declarative/patterns/) |
+| Brush | `rgb(0x1E293B)`, `linear_gradient(..)` | `"#1E293B"` | [Patterns]({{BASE}}/declarative/patterns/) |
+| Binding to a view model | `Person::NAME.two_way()` | a `Binding` with a path | [Binding]({{BASE}}/guides/binding/) |
+| Route | `#[derive(Route)]`, `navigate_to(&route)` | `route("/people/:id", ..)` | [Navigation]({{BASE}}/guides/navigation/) |
+| Resource reference | `.dynamic_resource(property, keys::Name)` | the same with `"Name"` | [Themes]({{BASE}}/design/themes/) |
+| Control theme, dictionary | `control_theme::<T>()`, `resource_dictionary()` | XAML | [Custom controls]({{BASE}}/design/custom-controls/) |
 
 ## Pick a property update pattern
 

@@ -137,6 +137,10 @@ Reading a signal in the function makes the whole component run again. Passing th
 
 Give the items of a list a stable `key`, as in React. In debug builds, missing and duplicate keys are reported as diagnostics; see [hot reload & inspector]({{BASE}}/declarative/tools/). A run is synchronous: it happens when the write that caused it ends, with no scheduler that defers or splits work. Keep expensive computation out of component bodies and in memos, services, or [futures]({{BASE}}/declarative/patterns/).
 
+## Pass typed values
+
+A component parameter takes what a setter takes, so `rgb(0x1E293B)`, `star(1.0)` or `ctrl(KeyCode::S)` work as arguments when the parameter has the matching type. The forms are listed under [patterns]({{BASE}}/declarative/patterns/). Use text for a value that comes from data.
+
 ## Try the samples
 
 ```sh
